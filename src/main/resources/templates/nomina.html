@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Nómina - CableGo</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons (Para los iconos del menú) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        body {
+            background-color: #f4f6f9;
+            overflow-x: hidden;
+        }
+        .sidebar {
+            width: 260px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            background-color: #212529;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding-top: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        .main-content {
+            margin-left: 260px;
+            padding: 30px;
+            width: calc(100% - 260px);
+        }
+        .sidebar .nav-link {
+            color: #c2c7d0;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            margin-left: 10px;
+            margin-right: 10px;
+            transition: all 0.3s;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+        .user-panel {
+            border-bottom: 1px solid #4f5962;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        .logout-container {
+            margin-top: auto;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- BARRA LATERAL (SIDEBAR) -->
+<nav class="sidebar">
+    <div class="text-center mb-4">
+        <h4 class="fw-bold text-white"><i class="bi bi-tv"></i> CableGo</h4>
+        <small class="text-muted">Gestión de Nómina</small>
+    </div>
+
+    <div class="user-panel text-center px-3">
+        <i class="bi bi-person-circle display-4 text-secondary"></i>
+        <h5 class="mt-2 mb-0 text-white" th:text="${usuarioEnSesion}">Usuario</h5>
+        <span class="badge bg-success mt-1">Conectado</span>
+    </div>
+
+    <ul class="nav flex-column mt-3">
+        <li class="nav-item px-2 text-muted mb-2"><small>OPCIONES CRUD</small></li>
+        <li class="nav-item">
+            <a class="nav-link active" href="/">
+                <i class="bi bi-plus-square"></i> Registrar / Guardar
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/consultar">
+                <i class="bi bi-search"></i> Consultar y Editar
+            </a>
+        </li>
+    </ul>
+
+    <div class="logout-container d-grid">
+        <a th:href="@{/logout}" class="btn btn-outline-danger">
+            <i class="bi bi-box-arrow-left"></i> Cerrar Sesión
+        </a>
+    </div>
+</nav>
+
+<!-- CONTENIDO PRINCIPAL -->
+<main class="main-content">
+    
+    <!-- Alerta de éxito al guardar -->
+    <div th:if="${param.exito}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="bi bi-check-circle-fill"></i> <strong>¡Excelente!</strong> Los datos han sido guardados correctamente en la base de datos.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="bi bi-person-plus"></i> Registrar Nuevo Abonado - Nómina</h4>
+        </div>
+        <div class="card-body p-4">
+
+            <form th:action="@{/guardar}" th:object="${nomina}" method="post">
+                
+                <!-- SELECTOR DE BASE DE DATOS -->
+                <div class="row mb-4 p-3 bg-warning bg-opacity-10 rounded border border-warning">
+                    <div class="col-md-12">
+                        <label for="baseDatosDestino" class="form-label fw-bold text-dark">¿A qué empresa (Base de Datos) pertenece este registro?</label>
+                        <select class="form-select form-select-lg shadow-sm" id="baseDatosDestino" name="baseDatosDestino" required>
+                            <option value="">-- Sin asignar (Guarda en BD Original y Unificada) --</option>
+                            <option value="ECONO">Econo (db_econo)</option>
+                            <option value="CONEXION">Conexión Digital (db_conexiondigital)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="mb-4">
+                <h5 class="mb-3 text-secondary"><i class="bi bi-person-lines-fill"></i> Datos del Cliente y Servicio</h5>
+
+                <div class="row">
+                    <!-- Fila 1 -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">ID Cabecera</label>
+                        <input type="text" class="form-control" th:field="*{idCabNominaCableGo}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Abonado (Código)</label>
+                        <input type="text" class="form-control" th:field="*{abonado}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Origen</label>
+                        <input type="text" class="form-control" th:field="*{origen}">
+                    </div>
+
+                    <!-- Fila 2 -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Nombres Completos</label>
+                        <input type="text" class="form-control" th:field="*{nombres}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Documento de Identidad</label>
+                        <input type="text" class="form-control" th:field="*{docIdent}">
+                    </div>
+
+                    <!-- Fila 3 -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Correo Electrónico</label>
+                        <input type="email" class="form-control" th:field="*{correo}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Celular</label>
+                        <input type="text" class="form-control" th:field="*{celular}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Día de Facturación</label>
+                        <input type="number" class="form-control" th:field="*{diaFacturacion}" min="1" max="31">
+                    </div>
+                </div>
+
+                <hr class="mt-2 mb-4">
+                <h5 class="mb-3 text-secondary"><i class="bi bi-box-seam"></i> Detalles del Paquete</h5>
+
+                <div class="row">
+                    <!-- Fila 1 -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Paquete Principal</label>
+                        <input type="text" class="form-control" th:field="*{paquetePrincipal}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Paquetes ADD</label>
+                        <input type="text" class="form-control" th:field="*{paquetesADD}" placeholder="Ej. SEXY POWER">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Accesos</label>
+                        <input type="text" class="form-control" th:field="*{accesos}">
+                    </div>
+
+                    <!-- Fila 2 -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Grabación</label>
+                        <input type="text" class="form-control" th:field="*{grabacion}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Total Mensual (S/)</label>
+                        <input type="number" step="0.01" class="form-control" th:field="*{totalMensual}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Estado del Servicio</label>
+                        <select class="form-select" th:field="*{estadoServicio}" id="estadoServicio">
+                            <option value="ACTIVO">ACTIVO</option>
+                            <option value="SUSPENDIDO">SUSPENDIDO</option>
+                            <option value="CORTADO">CORTADO</option>
+                            <option value="CANCELADO">CANCELADO</option>
+                        </select>
+                    </div>
+
+                    <!-- Fila 3 -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Tarifa Vigente</label>
+                        <input type="text" class="form-control" th:field="*{tarifaVigente}" placeholder="Ej. CABLEGO NACIONAL">
+                    </div>
+                    
+                    <!-- NUEVO: Tarifa Plan Inicial -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Tarifa Plan Inicial Contrato</label>
+                        <input type="text" class="form-control" th:field="*{tarifaPlanInicialContrato}" placeholder="Ej. CABLEGO BASICO">
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Precio de Tarifa</label>
+                        <input type="text" class="form-control" th:field="*{precioTarifa}" placeholder="Ej. 0.00">
+                    </div>
+
+                    <!-- Fila 4 -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Fecha de Suscripción</label>
+                        <input type="datetime-local" class="form-control" th:field="*{fechaSuscripcion}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Fecha de Instalación</label>
+                        <input type="date" class="form-control" th:field="*{fechaInstalacion}">
+                    </div>
+                </div>
+
+                <hr class="mt-2 mb-4">
+                <h5 class="mb-3 text-secondary"><i class="bi bi-briefcase"></i> Datos Administrativos y de Venta</h5>
+
+                <div class="row">
+                    <!-- Fila 1 -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Perfil Asignado</label>
+                        <input type="text" class="form-control" th:field="*{perfilAsignado}" id="perfilAsignado" placeholder="Ej. PERFIL BÁSICO">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Afiliaciones</label>
+                        <input type="text" class="form-control" th:field="*{afiliaciones}" placeholder="Ej. CHORRILLOS - 103294">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Fecha de Afiliación</label>
+                        <input type="datetime-local" class="form-control" th:field="*{fechaAfiliacion}">
+                    </div>
+
+                    <!-- Fila 2 -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Fecha de Último Pago</label>
+                        <input type="datetime-local" class="form-control" th:field="*{fechaUltPago}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Vendedor</label>
+                        <input type="text" class="form-control" th:field="*{vendedor}" placeholder="Ej. WILLIS RODRIGUEZ...">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Usuario</label>
+                        <input type="text" class="form-control" th:field="*{usuario}" placeholder="Ej. F01132867">
+                    </div>
+
+                    <!-- Fila 3 -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Categoría</label>
+                        <input type="text" class="form-control" th:field="*{categoria}" placeholder="Ej. RESIDENCIAL">
+                    </div>
+                    
+                    <!-- NUEVO: Origen Venta -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Origen Venta</label>
+                        <input type="text" class="form-control" th:field="*{origenVenta}" placeholder="Ej. COUNTER">
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Canal de Atención</label>
+                        <input type="text" class="form-control" th:field="*{canalAtencion}" placeholder="Ej. CALL CENTER">
+                    </div>
+
+                    <!-- Fila 4 -->
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">Filial</label>
+                        <select class="form-select" th:field="*{filial}">
+                            <option value="" disabled selected>-- Selecciona --</option>
+                            <option value="COCHARCAS">COCHARCAS</option>
+                            <option value="CHIMBOTE">CHIMBOTE</option>
+                            <option value="BARRANCA">BARRANCA</option>
+                            <option value="ABANCAY">ABANCAY</option>
+                            <option value="PATIVILCA">PATIVILCA</option>
+                            <option value="SUPE">SUPE</option>
+                            <option value="QUILLABAMBA">QUILLABAMBA</option>
+                            <option value="PUERTO MALDONADO">PUERTO MALDONADO</option>
+                            <option value="PARAMONGA">PARAMONGA</option>
+                            <option value="AREQUIPA SUR">AREQUIPA SUR</option>
+                            <option value="REDES OPTICAS">REDES OPTICAS</option>
+                            <option value="FILIALES PRUEB">FILIALES PRUEB</option>
+                            <option value="PAMPLONA">PAMPLONA</option>
+                            <option value="PUERTO TV">PUERTO TV</option>
+                            <option value="ABANCAY TV">ABANCAY TV</option>
+                            <option value="SAN FELIPE">SAN FELIPE</option>
+                            <option value="CARRIER">CARRIER</option>
+                            <option value="TACNA">TACNA</option>
+                            <option value="PUNO">PUNO</option>
+                            <option value="JULIACA">JULIACA</option>
+                            <option value="H NET">H NET</option>
+                            <option value="NEDTEL">NEDTEL</option>
+                            <option value="CONDOMINIOS">CONDOMINIOS</option>
+                            <option value="CALL CENTER">CALL CENTER</option>
+                            <option value="CENTRAL LIMA">CENTRAL LIMA</option>
+                            <option value="E-RECOJO">E-RECOJO</option>
+                            <option value="CORPORATIVO">CORPORATIVO</option>
+                            <option value="CABLEGO GRATIS">CABLEGO GRATIS</option>
+                            <option value="CABLEGO COMERCIAL">CABLEGO COMERCIAL</option>
+                            <option value="CHORRILLOS">CHORRILLOS</option>
+                            <option value="PACHACAMAC">PACHACAMAC</option>
+                            <option value="SAN MARTIN">SAN MARTIN</option>
+                            <option value="INDEPENDENCIA">INDEPENDENCIA</option>
+                            <option value="AREQUIPA NORTE">AREQUIPA NORTE</option>
+                            <option value="YESS PMD">YESS PMD</option>
+                            <option value="YESS BARRANCA">YESS BARRANCA</option>
+                            <option value="YESS PUNO">YESS PUNO</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="mt-2 mb-4">
+                <h5 class="mb-3 text-danger"><i class="bi bi-x-octagon"></i> Cancelación de Servicio</h5>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Fecha de Cancelación</label>
+                        <input type="datetime-local" class="form-control" th:field="*{fechaCancelacion}" id="fechaCancelacion">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Motivo de Cancelación</label>
+                        <input type="text" class="form-control" th:field="*{motivoCancelacion}" id="motivoCancelacion">
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-success btn-lg shadow-sm">
+                        <i class="bi bi-save"></i> Guardar Registro
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const estadoSelect = document.getElementById("estadoServicio");
+        const motivoInput = document.getElementById("motivoCancelacion");
+        const fechaCancelacionInput = document.getElementById("fechaCancelacion");
+        const perfilInput = document.getElementById("perfilAsignado");
+
+        function procesarEstadoServicio() {
+            if (estadoSelect.value === "ACTIVO") {
+                motivoInput.value = "";
+                motivoInput.readOnly = true;
+                motivoInput.classList.add("bg-light");
+                
+                fechaCancelacionInput.value = "";
+                fechaCancelacionInput.readOnly = true;
+                fechaCancelacionInput.classList.add("bg-light");
+
+                perfilInput.readOnly = false;
+                perfilInput.classList.remove("bg-light");
+                
+                if(perfilInput.value === "SIN ACCESO") {
+                    perfilInput.value = "";
+                }
+
+            } else {
+                motivoInput.readOnly = false;
+                motivoInput.classList.remove("bg-light");
+                
+                fechaCancelacionInput.readOnly = false;
+                fechaCancelacionInput.classList.remove("bg-light");
+
+                perfilInput.value = "SIN ACCESO";
+                perfilInput.readOnly = true;
+                perfilInput.classList.add("bg-light");
+            }
+        }
+
+        procesarEstadoServicio();
+        estadoSelect.addEventListener("change", procesarEstadoServicio);
+    });
+</script>
+</body>
+</html>
