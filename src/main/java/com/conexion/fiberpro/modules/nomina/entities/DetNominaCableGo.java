@@ -1,24 +1,23 @@
-package com.conexion.nominacrud.entity;
+package com.conexion.fiberpro.modules.nomina.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * Entidad transaccional para la tabla Det_NominaCableGo.
+ * Mapea los 32 atributos definidos en el diccionario de datos.
+ */
 @Data
 @Entity
 @Table(name = "Det_NominaCableGo")
 public class DetNominaCableGo {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // <--- ¡AÑADE ESTA LÍNEA!
-    @Column(name = "IdDet_NominaCableGo")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "IdDet_NominaCableGo", nullable = false)
     private Integer idDetNominaCableGo;
 
     @Column(name = "IdCab_NominaCableGo")
@@ -43,7 +42,7 @@ public class DetNominaCableGo {
     private String correo;
 
     @Column(name = "DiaFacturacion")
-    private Integer diaFacturacion; // Es INT en la BD
+    private Integer diaFacturacion;
 
     @Column(name = "Accesos", length = 8000)
     private String accesos;
@@ -58,13 +57,13 @@ public class DetNominaCableGo {
     private String paquetesADD;
 
     @Column(name = "TotalMensual")
-    private BigDecimal totalMensual; // Es DECIMAL en la BD
+    private BigDecimal totalMensual;
 
     @Column(name = "FechaSuscripcion", length = 50)
-    private String fechaSuscripcion; // ¡Es VARCHAR en la BD!
+    private String fechaSuscripcion;
 
     @Column(name = "FechaCancelacion")
-    private LocalDateTime fechaCancelacion; // Es DATETIME en la BD
+    private LocalDateTime fechaCancelacion;
 
     @Column(name = "MotivoCancelacion", length = 8000)
     private String motivoCancelacion;
@@ -79,10 +78,10 @@ public class DetNominaCableGo {
     private String afiliaciones;
 
     @Column(name = "FechaAfiliacion", length = 20)
-    private String fechaAfiliacion; // ¡Es VARCHAR en la BD!
+    private String fechaAfiliacion;
 
     @Column(name = "FechaUltPago")
-    private LocalDateTime fechaUltPago; // Es DATETIME en la BD
+    private LocalDateTime fechaUltPago;
 
     @Column(name = "Vendedor", length = 1000)
     private String vendedor;
@@ -100,17 +99,17 @@ public class DetNominaCableGo {
     private String categoria;
 
     @Column(name = "FechaInstalacion", length = 50)
-    private String fechaInstalacion; // ¡Es VARCHAR en la BD!
+    private String fechaInstalacion;
 
     @Column(name = "TarifaVigente", length = 50)
-    private String tarifaVigente; // ¡Es VARCHAR en la BD!
+    private String tarifaVigente;
 
     @Column(name = "PrecioTarifa", length = 50)
-    private String precioTarifa; // ¡Es VARCHAR en la BD!
+    private String precioTarifa;
 
     @Column(name = "CanalAtencion", length = 100)
     private String canalAtencion;
 
     @Column(name = "TarifaPlanInicialContrato", length = 100)
-    private String tarifaPlanInicialContrato; // ¡Es VARCHAR en la BD!
+    private String tarifaPlanInicialContrato;
 }

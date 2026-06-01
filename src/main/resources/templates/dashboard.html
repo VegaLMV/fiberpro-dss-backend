@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}">
+<head>
+    <title>FiberPro DSS - Panel Principal</title>
+</head>
+<body>
+<div layout:fragment="content" th:fragment="content">
+    <style>
+        .fade-in-up { animation: fadeInUp 0.5s ease-out forwards; opacity: 0; transform: translateY(15px); }
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+        .module-card {
+            border: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            background: #ffffff;
+            border-left: 5px solid var(--primary);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+        .module-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+        .module-card a {
+            text-decoration: none;
+            color: inherit;
+        }
+    </style>
+
+    <div class="container-fluid fade-in-up">
+
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+            <div>
+                <h2 class="fw-bold text-dark mb-0">Bienvenido, <span class="text-primary" th:text="${session.usuarioLogueado}">Usuario</span></h2>
+                <p class="text-muted mb-0">Sistema de Soporte de Decisiones - Panel Principal</p>
+            </div>
+        </div>
+
+        <div class="alert alert-primary bg-white border-0 border-start border-primary border-4 shadow-sm mb-4 d-flex align-items-center" role="alert">
+            <i class="bi bi-info-circle-fill fs-4 text-primary me-3"></i>
+            <div>
+                <strong>Entorno Activo:</strong> Seleccione un módulo para comenzar a registrar o consultar operaciones en las bases de datos de las filiales.
+            </div>
+        </div>
+
+        <div class="row g-4 mt-2">
+
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card module-card h-100" style="border-left-color: #0d6efd;">
+                    <a th:href="@{/clientes/abonados/registrar}" class="card-body d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-10 p-3 rounded-3 me-3">
+                            <i class="bi bi-people-fill text-primary fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1">Abonados</h5>
+                            <span class="text-muted small">Gestión de Clientes</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card module-card h-100" style="border-left-color: #dc3545;">
+                    <a th:href="@{/operaciones/incidencias/registrar}" class="card-body d-flex align-items-center">
+                        <div class="bg-danger bg-opacity-10 p-3 rounded-3 me-3">
+                            <i class="bi bi-tools text-danger fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1">Operaciones</h5>
+                            <span class="text-muted small">Tickets e Incidencias</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card module-card h-100" style="border-left-color: #198754;">
+                    <a th:href="@{/finanzas/abonos/registrar}" class="card-body d-flex align-items-center">
+                        <div class="bg-success bg-opacity-10 p-3 rounded-3 me-3">
+                            <i class="bi bi-currency-dollar text-success fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1">Finanzas</h5>
+                            <span class="text-muted small">Registro de Abonos</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card module-card h-100" style="border-left-color: #6f42c1;">
+                    <a th:href="@{/nomina/registrar}" class="card-body d-flex align-items-center">
+                        <div class="bg-secondary bg-opacity-10 p-3 rounded-3 me-3">
+                            <i class="bi bi-person-badge-fill text-secondary fs-3" style="color: #6f42c1 !important;"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1">Nómina</h5>
+                            <span class="text-muted small">Control de Personal</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

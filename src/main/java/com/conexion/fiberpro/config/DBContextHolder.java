@@ -1,4 +1,4 @@
-package com.conexion.nominacrud.config;
+package com.conexion.fiberpro.config;
 
 public class DBContextHolder {
     private static final ThreadLocal<String> contextHolder = new ThreadLocal<>();

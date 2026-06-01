@@ -1,4 +1,4 @@
-package com.conexion.nominacrud.config;
+package com.conexion.fiberpro.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;

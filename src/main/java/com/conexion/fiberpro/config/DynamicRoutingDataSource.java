@@ -1,4 +1,4 @@
-package com.conexion.nominacrud.config;
+package com.conexion.fiberpro.config;
 
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
