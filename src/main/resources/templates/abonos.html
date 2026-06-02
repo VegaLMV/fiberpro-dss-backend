@@ -4,159 +4,319 @@
 <body>
 <div layout:fragment="content" th:fragment="content">
     <style>
-        .slide-in { animation: slideIn 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; opacity: 0; transform: translateX(-20px); }
-        .slide-in-right { animation: slideInRight 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; opacity: 0; transform: translateX(20px); animation-delay: 0.1s; }
-        @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
-        @keyframes slideInRight { to { opacity: 1; transform: translateX(0); } }
-        
-        .pos-card { border: none; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); background: #fff; }
-        .pos-header { background: linear-gradient(135deg, #198754, #20c997); color: white; border-radius: 15px 15px 0 0; padding: 25px; }
-        
-        .amount-input { font-size: 3rem !important; font-weight: 700; color: #198754; height: auto !important; text-align: right; padding: 10px 20px !important; background-color: #f8f9fa; }
-        .amount-input:focus { box-shadow: none; border-color: #198754; background-color: #fff; }
-        .currency-symbol { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); font-size: 2.2rem; color: #6c757d; z-index: 5; }
+        .amount-input-modal { font-size: 2.5rem !important; font-weight: 700; color: #198754; text-align: right; background-color: #f8f9fa; }
+        .amount-input-modal:focus { background-color: #fff; border-color: #198754; box-shadow: 0 0 0 4px rgba(25,135,84,0.15); }
+        .currency-symbol-modal { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); font-size: 2rem; color: #6c757d; z-index: 5; }
     </style>
 
-    <div class="container-fluid">
-        <h3 class="fw-bold mb-4 text-dark slide-in"><i class="bi bi-currency-dollar text-success me-2"></i>Caja y Pagos</h3>
-        
-        <div class="row g-4">
-            <!-- Formulario Punto de Venta (POS) -->
-            <div class="col-12 col-lg-5 col-xl-4 slide-in">
-                <div class="card pos-card h-100">
-                    <div class="pos-header text-center">
-                        <i class="bi bi-cash-stack display-4 opacity-75"></i>
-                        <h4 class="mt-2 fw-bold mb-0">Registrar Abono</h4>
-                    </div>
-                    <div class="card-body p-4">
-                        <form th:action="@{/finanzas/abonos/guardar}" method="POST" class="needs-validation" novalidate>
-                            
-                            <!-- Multi-Tenancy Crítico -->
-                            <div class="mb-4">
-                                <label class="form-label fw-bold text-dark"><i class="bi bi-server me-1"></i>Entorno de Base de Datos</label>
-                                <select name="baseDatosDestino" class="form-select border-2 border-success shadow-sm" required>
-                                    <option value="" selected disabled>Seleccione BD...</option>
-                                    <option value="db_econo">db_econo</option>
-                                    <option value="db_conexiondigital">db_conexiondigital</option>
-                                </select>
-                                <div class="invalid-feedback">Obligatorio.</div>
-                            </div>
+    <div class="container-fluid fade-in-up">
 
-                            <div class="mb-4 position-relative">
-                                <label class="form-label fw-bold text-dark">Importe Total</label>
-                                <div class="position-relative">
-                                    <span class="currency-symbol">$</span>
-                                    <input type="number" step="0.01" class="form-control amount-input rounded-3" placeholder="0.00" required>
-                                </div>
-                            </div>
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+            <div>
+                <h3 class="fw-bold text-dark mb-0"><i class="bi bi-currency-dollar text-success me-2"></i>Caja y Pagos</h3>
+                <p class="text-muted small mb-0">Gestión de Transacciones - 50 Registros por bloque</p>
+            </div>
+            <ul class="nav nav-pills db-switcher-nav shadow-sm bg-white rounded p-1">
+                <li class="nav-item">
+                    <a class="nav-link db-tab-link fw-bold" th:classappend="${dbActiva == 'econo' ? 'active bg-success text-white' : 'text-muted'}" th:href="@{/finanzas/abonos/registrar(db='econo')}">EconoCable</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link db-tab-link fw-bold" th:classappend="${dbActiva == 'conexion' ? 'active bg-success text-white' : 'text-muted'}" th:href="@{/finanzas/abonos/registrar(db='conexion')}">Conexión Digital</a>
+                </li>
+            </ul>
+        </div>
 
-                            <div class="row g-3 mb-3">
-                                <div class="col-12">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="idAbonado" placeholder="ID" required>
-                                        <label for="idAbonado"><i class="bi bi-upc-scan me-1"></i>ID Abonado (Documento)</label>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="concepto" placeholder="Concepto" required>
-                                        <label for="concepto"><i class="bi bi-card-text me-1"></i>Concepto del Pago</label>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="form-floating">
-                                        <input type="month" class="form-control" id="periodo" required>
-                                        <label for="periodo">Periodo</label>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="form-floating">
-                                        <select class="form-select" id="estadoPago" required>
-                                            <option value="Completado">Completado</option>
-                                            <option value="Pendiente">Pendiente</option>
-                                        </select>
-                                        <label for="estadoPago">Estado</label>
-                                    </div>
-                                </div>
-                            </div>
+        <div th:if="${param.exito}" class="alert alert-success shadow-sm"><i class="bi bi-check-circle-fill me-2"></i> Operación procesada correctamente.</div>
+        <div th:if="${param.eliminado}" class="alert alert-warning shadow-sm"><i class="bi bi-x-circle-fill me-2"></i> El pago ha sido anulado (Eliminación Lógica).</div>
 
-                            <button type="submit" class="btn btn-success w-100 py-3 fw-bold fs-5 shadow mt-3 rounded-3">
-                                Procesar Pago <i class="bi bi-check-circle-fill ms-2"></i>
-                            </button>
-                        </form>
-                    </div>
+        <div class="card card-premium mb-4">
+            <div class="card-header bg-white border-bottom pt-4 pb-3 d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+                <div>
+                    <button type="button" class="btn btn-outline-success fw-bold px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalBusqueda">
+                        <i class="bi bi-funnel-fill me-2"></i>Filtros Avanzados
+                    </button>
+                    <a th:if="${hayFiltros}" th:href="@{/finanzas/abonos/registrar(db=${dbActiva})}" class="btn btn-light border text-danger fw-bold ms-2">
+                        <i class="bi bi-x-circle-fill me-1"></i>Limpiar Búsqueda
+                    </a>
                 </div>
+
+                <button type="button" class="btn btn-success fw-bold shadow-sm px-4" onclick="abrirModalNuevo()">
+                    <i class="bi bi-cash-stack me-2"></i>Registrar Abono
+                </button>
             </div>
 
-            <!-- Tabla Pagos Recientes -->
-            <div class="col-12 col-lg-7 col-xl-8 slide-in-right">
-                <div class="card border-0 rounded-4 shadow-sm h-100">
-                    <div class="card-header bg-white border-0 pt-4 pb-3 d-flex justify-content-between align-items-center">
-                        <h5 class="fw-bold text-secondary m-0"><i class="bi bi-receipt-cutoff me-2"></i>Transacciones del Día</h5>
-                        <button class="btn btn-sm btn-outline-success rounded-pill"><i class="bi bi-arrow-clockwise me-1"></i>Actualizar</button>
-                    </div>
-                    <div class="card-body p-0 mt-2">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th class="ps-4">Ticket</th>
-                                        <th>Abonado ID</th>
-                                        <th>Periodo</th>
-                                        <th>Instancia BD</th>
-                                        <th class="text-end">Importe</th>
-                                        <th class="text-center pe-4">Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="ps-4 text-muted">#TXN-9021</td>
-                                        <td class="fw-semibold">AB-4059</td>
-                                        <td>Mayo 2026</td>
-                                        <td><span class="badge bg-primary rounded-pill">db_econo</span></td>
-                                        <td class="text-end fw-bold text-success">$45.00</td>
-                                        <td class="text-center pe-4"><i class="bi bi-check-circle-fill text-success fs-5" title="Completado"></i></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4 text-muted">#TXN-9020</td>
-                                        <td class="fw-semibold">AB-1102</td>
-                                        <td>Mayo 2026</td>
-                                        <td><span class="badge bg-info text-dark rounded-pill">db_conexiondigital</span></td>
-                                        <td class="text-end fw-bold text-success">$60.50</td>
-                                        <td class="text-center pe-4"><i class="bi bi-check-circle-fill text-success fs-5" title="Completado"></i></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4 text-muted">#TXN-9019</td>
-                                        <td class="fw-semibold">AB-8834</td>
-                                        <td>Abril 2026</td>
-                                        <td><span class="badge bg-primary rounded-pill">db_econo</span></td>
-                                        <td class="text-end fw-bold text-dark">$30.00</td>
-                                        <td class="text-center pe-4"><i class="bi bi-clock-fill text-warning fs-5" title="Pendiente"></i></td>
-                                    </tr>
-                                </tbody>
-                            </table>
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-custom table-hover align-middle mb-0">
+                    <thead class="table-light text-muted">
+                    <tr>
+                        <th class="ps-4 py-3">Ticket</th>
+                        <th>Abonado ID</th>
+                        <th>Concepto</th>
+                        <th>Periodo</th>
+                        <th class="text-end">Importe</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center pe-4">Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="abono : ${paginaAbonos.content}">
+                        <td class="ps-4 text-muted fw-bold">#TXN-[[${abono.idAbono}]]</td>
+                        <td><span class="badge bg-light text-dark border">[[${abono.idAbonado}]]</span></td>
+                        <td class="text-truncate" style="max-width: 250px;" th:text="${abono.concepto}"></td>
+                        <td class="fw-semibold text-primary" th:text="${abono.periodo}"></td>
+                        <td class="text-end fw-bold text-success fs-5">$[[${abono.importe}]]</td>
+                        <td class="text-center">
+                            <span class="badge" th:classappend="${abono.estado == 'COM' ? 'bg-success text-white' : (abono.estado == 'ANU' ? 'bg-danger text-white' : 'bg-warning text-dark')}" th:text="${abono.estado}"></span>
+                        </td>
+                        <td class="text-center pe-4">
+                            <button type="button" class="btn btn-sm btn-outline-info shadow-sm me-1" title="Ver"
+                                    th:attr="data-id=${abono.idAbono}, data-abonado=${abono.idAbonado}, data-concepto=${abono.concepto}, data-periodo=${abono.periodo}, data-importe=${abono.importe}, data-estado=${abono.estado}"
+                                    onclick="abrirModalVer(this)"><i class="bi bi-eye-fill"></i></button>
+
+                            <button type="button" class="btn btn-sm btn-outline-success shadow-sm me-1" title="Editar"
+                                    th:attr="data-id=${abono.idAbono}, data-abonado=${abono.idAbonado}, data-concepto=${abono.concepto}, data-periodo=${abono.periodo}, data-importe=${abono.importe}, data-estado=${abono.estado}"
+                                    onclick="abrirModalEdicion(this)"><i class="bi bi-pencil-square"></i></button>
+
+                            <a th:href="@{/finanzas/abonos/eliminar/{id}(id=${abono.idAbono}, db=${dbActiva})}" class="btn btn-sm btn-outline-danger shadow-sm" title="Anular" onclick="return confirm('¿Seguro que desea anular este pago?')"><i class="bi bi-x-circle-fill"></i></a>
+                        </td>
+                    </tr>
+                    <tr th:if="${paginaAbonos.empty}">
+                        <td colspan="7" class="text-center py-5 text-muted">No se encontraron transacciones.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-footer bg-white border-top py-3 d-flex justify-content-between align-items-center flex-wrap">
+                <small class="text-muted fw-bold ps-2 mb-2 mb-md-0">Total: [[${paginaAbonos.totalElements}]] abonos</small>
+
+                <nav th:if="${paginaAbonos.totalPages > 1}">
+                    <ul class="pagination mb-0 pe-2 align-items-center">
+                        <li class="page-item" th:classappend="${paginaAbonos.first ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{/finanzas/abonos/registrar(db=${dbActiva}, page=${paginaAbonos.number - 1}, idAbonado=${param.idAbonado}, periodo=${param.periodo}, concepto=${param.concepto}, estado=${param.estado})}"><i class="bi bi-chevron-left"></i> Ant</a>
+                        </li>
+
+                        <li class="page-item d-flex align-items-center px-3 bg-light border-top border-bottom">
+                            <span class="me-2 text-muted fw-bold small">Pág.</span>
+                            <input type="number" class="form-control form-control-sm text-center fw-bold shadow-none"
+                                   style="width: 65px; border-color: #cbd5e1;"
+                                   th:value="${paginaAbonos.number + 1}"
+                                   th:max="${paginaAbonos.totalPages}" min="1"
+                                   onchange="saltarPagina(this.value, '[[${paginaAbonos.totalPages}]]')">
+                            <span class="ms-2 text-muted fw-bold small">de [[${paginaAbonos.totalPages}]]</span>
+                        </li>
+
+                        <li class="page-item" th:classappend="${paginaAbonos.last ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{/finanzas/abonos/registrar(db=${dbActiva}, page=${paginaAbonos.number + 1}, idAbonado=${param.idAbonado}, periodo=${param.periodo}, concepto=${param.concepto}, estado=${param.estado})}">Sig <i class="bi bi-chevron-right"></i></a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalBusqueda" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4">
+                <div class="modal-header bg-light border-bottom">
+                    <h5 class="modal-title fw-bold text-dark"><i class="bi bi-funnel-fill text-success me-2"></i>Filtros de Caja</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form th:action="@{/finanzas/abonos/registrar}" method="GET">
+                        <input type="hidden" name="db" th:value="${dbActiva}" />
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="fw-bold small text-muted">ID Abonado</label>
+                                <input type="number" class="form-control" name="idAbonado" th:value="${param.idAbonado}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="fw-bold small text-muted">Periodo (Ej. 202605)</label>
+                                <input type="number" class="form-control" name="periodo" th:value="${param.periodo}">
+                            </div>
                         </div>
-                    </div>
+
+                        <div class="mb-3">
+                            <label class="fw-bold small text-muted">Concepto (Frase o palabra)</label>
+                            <input type="text" class="form-control" name="concepto" th:value="${param.concepto}">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="fw-bold small text-muted">Estado del Pago</label>
+                            <select class="form-select" name="estado" th:value="${param.estado}">
+                                <option value="">Cualquiera...</option>
+                                <option value="COM" th:selected="${param.estado == 'COM'}">Completado</option>
+                                <option value="PEN" th:selected="${param.estado == 'PEN'}">Pendiente</option>
+                                <option value="ANU" th:selected="${param.estado == 'ANU'}">Anulado</option>
+                            </select>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                            <a th:href="@{/finanzas/abonos/registrar(db=${dbActiva})}" class="btn btn-light border fw-bold px-4">Limpiar</a>
+                            <button type="submit" class="btn btn-success fw-bold px-4"><i class="bi bi-search me-2"></i>Buscar Pagos</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Script de Validación -->
+    <div class="modal fade" id="abonoModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0 rounded-4">
+                <div class="modal-header text-white" style="background: linear-gradient(135deg, #198754, #20c997);">
+                    <h5 class="modal-title fw-bold" id="modalTitle"><i class="bi bi-cash-stack me-2"></i>Registrar Abono</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="abonoForm" th:action="@{/finanzas/abonos/guardar}" method="POST" class="needs-validation" novalidate th:object="${abonoDTO}">
+                        <input type="hidden" id="idAbono" th:field="*{idAbono}" />
+                        <input type="hidden" name="baseDatosDestino" th:value="${dbActiva}" />
+
+                        <div class="mb-4 position-relative">
+                            <label class="form-label fw-bold text-dark">Importe Total</label>
+                            <div class="position-relative">
+                                <span class="currency-symbol-modal">$</span>
+                                <input type="number" step="0.01" class="form-control amount-input-modal rounded-3" id="importe" th:field="*{importe}" required>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="fw-bold small text-muted">ID Abonado</label>
+                                <input type="number" class="form-control" id="idAbonadoInput" th:field="*{idAbonado}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="fw-bold small text-muted">Periodo</label>
+                                <input type="number" class="form-control" id="periodoInput" th:field="*{periodo}" placeholder="202605" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="fw-bold small text-muted">Concepto</label>
+                            <input type="text" class="form-control" id="conceptoInput" th:field="*{concepto}" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="fw-bold small text-muted">Estado</label>
+                            <select class="form-select border-success" id="estadoInput" th:field="*{estado}" required>
+                                <option value="COM">Completado</option>
+                                <option value="PEN">Pendiente</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100 py-3 fw-bold fs-5 shadow-sm rounded-3" id="btnGuardar">
+                            Procesar Pago <i class="bi bi-check-circle-fill ms-2"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalVerAbono" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4">
+                <div class="modal-header bg-dark text-white border-bottom-0 rounded-top-4">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-receipt me-2"></i>Detalle de Transacción</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 bg-light text-center">
+                    <h1 class="display-4 fw-bold text-success mb-0" id="verImporte">$0.00</h1>
+                    <span class="badge rounded-pill mb-4" id="verEstado">ESTADO</span>
+
+                    <ul class="list-group list-group-flush shadow-sm rounded-3 text-start">
+                        <li class="list-group-item d-flex justify-content-between py-3">
+                            <span class="text-muted small fw-bold">Ticket de Operación</span>
+                            <span class="fw-bold text-dark" id="verId">#0</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between py-3">
+                            <span class="text-muted small fw-bold">ID Abonado</span>
+                            <span class="fw-bold text-dark" id="verAbonado">0</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between py-3">
+                            <span class="text-muted small fw-bold">Periodo Facturado</span>
+                            <span class="fw-bold text-primary" id="verPeriodo">202605</span>
+                        </li>
+                        <li class="list-group-item py-3">
+                            <span class="text-muted small fw-bold d-block mb-1">Concepto</span>
+                            <span class="fw-medium text-dark" id="verConcepto">Concepto</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.appendChild(document.getElementById('modalBusqueda'));
+            document.body.appendChild(document.getElementById('abonoModal'));
+            document.body.appendChild(document.getElementById('modalVerAbono'));
+        });
+
+        function saltarPagina(paginaIngresada, totalPaginas) {
+            let pag = parseInt(paginaIngresada);
+            let total = parseInt(totalPaginas);
+            if (isNaN(pag) || pag < 1) pag = 1;
+            if (pag > total) pag = total;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('page', pag - 1);
+            window.location.search = urlParams.toString();
+        }
+
+        function abrirModalNuevo() {
+            document.getElementById('abonoForm').reset();
+            document.getElementById('idAbono').value = '';
+            document.getElementById('modalTitle').innerHTML = '<i class="bi bi-cash-stack me-2"></i>Registrar Abono';
+            document.getElementById('btnGuardar').innerHTML = 'Procesar Pago <i class="bi bi-check-circle-fill ms-2"></i>';
+            new bootstrap.Modal(document.getElementById('abonoModal')).show();
+        }
+
+        function abrirModalEdicion(btn) {
+            document.getElementById('idAbono').value = btn.getAttribute('data-id');
+            document.getElementById('importe').value = btn.getAttribute('data-importe');
+            document.getElementById('idAbonadoInput').value = btn.getAttribute('data-abonado');
+            document.getElementById('periodoInput').value = btn.getAttribute('data-periodo');
+            document.getElementById('conceptoInput').value = btn.getAttribute('data-concepto');
+            document.getElementById('estadoInput').value = btn.getAttribute('data-estado');
+
+            document.getElementById('modalTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i>Modificar Pago #' + btn.getAttribute('data-id');
+            document.getElementById('btnGuardar').innerHTML = 'Actualizar Pago <i class="bi bi-save ms-2"></i>';
+            new bootstrap.Modal(document.getElementById('abonoModal')).show();
+        }
+
+        function abrirModalVer(btn) {
+            document.getElementById('verId').innerText = '#' + btn.getAttribute('data-id');
+            document.getElementById('verAbonado').innerText = btn.getAttribute('data-abonado');
+            document.getElementById('verImporte').innerText = '$' + btn.getAttribute('data-importe');
+            document.getElementById('verPeriodo').innerText = btn.getAttribute('data-periodo');
+            document.getElementById('verConcepto').innerText = btn.getAttribute('data-concepto');
+
+            let estado = btn.getAttribute('data-estado');
+            let badge = document.getElementById('verEstado');
+            badge.innerText = estado === 'COM' ? 'COMPLETADO' : (estado === 'ANU' ? 'ANULADO' : 'PENDIENTE');
+            badge.className = 'badge rounded-pill mb-4 mt-2 px-3 ' + (estado === 'COM' ? 'bg-success' : (estado === 'ANU' ? 'bg-danger' : 'bg-warning text-dark'));
+
+            new bootstrap.Modal(document.getElementById('modalVerAbono')).show();
+        }
+
         (() => {
             'use strict'
             const forms = document.querySelectorAll('.needs-validation')
             Array.from(forms).forEach(form => {
                 form.addEventListener('submit', event => {
                     if (!form.checkValidity()) {
-                        event.preventDefault()
-                        event.stopPropagation()
+                        event.preventDefault();
+                        event.stopPropagation();
                     }
                     form.classList.add('was-validated')
                 }, false)
             })
-        })()
+        })();
     </script>
 </div>
 </body>

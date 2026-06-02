@@ -22,8 +22,14 @@ public class AbonadoDTO {
     private String sexo;
     private String celular;
     private String correo;
+    private String telefono;
+    private String numCasa;
+    private String numDispositivo;
+    @org.springframework.format.annotation.DateTimeFormat(pattern = "yyyy-MM-dd")
+    private java.time.LocalDate fechaNacimiento;
     private String estAbonado;
     private LocalDateTime fechaEstado;
     private String zona;
     private LocalDateTime fechaSuscripcion;
+    private Integer indEliminacionUsuario;
 }

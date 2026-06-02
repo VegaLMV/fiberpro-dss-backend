@@ -3,174 +3,430 @@
 <head><title>Clientes - Abonados</title></head>
 <body>
 <div layout:fragment="content" th:fragment="content">
-    <style>
-        .fade-in { animation: fadeIn 0.6s ease-in-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        .premium-card { border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: box-shadow 0.3s ease; }
-        .premium-card:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
-        .table-custom thead { background-color: #212529; color: #fff; }
-        .table-custom tbody tr { transition: background-color 0.2s; }
-        .table-custom tbody tr:hover { background-color: #f8f9fa; cursor: pointer; }
-    </style>
 
-    <div class="container-fluid fade-in">
-        <h3 class="fw-bold mb-4 text-dark"><i class="bi bi-people-fill text-primary me-2"></i>Gestión de Abonados</h3>
+    <div class="container-fluid fade-in-up">
 
-        <div class="row g-4">
-            <!-- Formulario (Izquierda) -->
-            <div class="col-12 col-xl-4">
-                <div class="card premium-card">
-                    <div class="card-header bg-white border-0 pt-4 pb-0">
-                        <h5 class="fw-bold text-secondary">Registrar Nuevo Cliente</h5>
-                    </div>
-                    <div class="card-body p-4">
-                        <form th:action="@{/clientes/abonados/guardar}" method="POST" class="needs-validation" novalidate>
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+            <div>
+                <h3 class="fw-bold text-dark mb-0"><i class="bi bi-people-fill text-primary me-2"></i>Gestión de Clientes</h3>
+                <p class="text-muted small mb-0">Base de datos operativa y analítica</p>
+            </div>
+            <ul class="nav nav-pills db-switcher-nav shadow-sm bg-white rounded p-1">
+                <li class="nav-item">
+                    <a class="nav-link db-tab-link fw-bold" th:classappend="${dbActiva == 'econo' ? 'active bg-primary text-white' : 'text-muted'}" th:href="@{/clientes/abonados/registrar(db='econo')}">EconoCable</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link db-tab-link fw-bold" th:classappend="${dbActiva == 'conexion' ? 'active bg-primary text-white' : 'text-muted'}" th:href="@{/clientes/abonados/registrar(db='conexion')}">Conexión Digital</a>
+                </li>
+            </ul>
+        </div>
 
-                            <!-- Multi-Tenancy Crítico -->
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold text-muted small"><i class="bi bi-server me-1"></i>Base de Datos Destino</label>
-                                <select name="baseDatosDestino" class="form-select border-primary shadow-sm" required>
-                                    <option value="" selected disabled>Seleccione Base de Datos...</option>
-                                    <option value="db_econo">db_econo</option>
-                                    <option value="db_conexiondigital">db_conexiondigital</option>
-                                </select>
-                                <div class="invalid-feedback">Obligatorio elegir un entorno.</div>
-                            </div>
+        <div th:if="${param.exito}" class="alert alert-success shadow-sm"><i class="bi bi-check-circle-fill me-2"></i> Operación realizada correctamente.</div>
+        <div th:if="${param.eliminado}" class="alert alert-warning shadow-sm"><i class="bi bi-person-x-fill me-2"></i> El cliente ha sido dado de baja (Eliminación Lógica).</div>
 
-                            <div class="row g-2 mb-3">
-                                <div class="col-md-5">
-                                    <div class="form-floating">
-                                        <select class="form-select" id="tipoDoc" required>
-                                            <option value="DNI">DNI</option>
-                                            <option value="RUC">RUC</option>
-                                        </select>
-                                        <label for="tipoDoc">Tipo Doc.</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-7">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="numDoc" placeholder="Número" required>
-                                        <label for="numDoc">Número Doc.</label>
-                                    </div>
-                                </div>
-                            </div>
+        <div class="card card-premium mb-4">
+            <div class="card-header bg-white border-bottom pt-4 pb-3 d-flex justify-content-between align-items-center flex-wrap gap-3">
 
-                            <div class="form-floating mb-3">
-                                <input type="text" class="form-control" id="nombres" placeholder="Nombres" required>
-                                <label for="nombres"><i class="bi bi-person me-1"></i>Nombres / Razón Social</label>
-                            </div>
-
-                            <div class="row g-2 mb-3">
-                                <div class="col-md-6">
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light"><i class="bi bi-telephone"></i></span>
-                                        <input type="tel" class="form-control" placeholder="Celular" required>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <select class="form-select" id="estado" required>
-                                            <option value="Activo">Activo</option>
-                                            <option value="Suspendido">Suspendido</option>
-                                        </select>
-                                        <label for="estado">Estado</label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-floating mb-3">
-                                <input type="email" class="form-control" id="correo" placeholder="Correo" required>
-                                <label for="correo"><i class="bi bi-envelope me-1"></i>Correo Electrónico</label>
-                            </div>
-
-                            <div class="form-floating mb-4">
-                                <select class="form-select" id="zona" required>
-                                    <option value="" selected disabled>Elegir zona...</option>
-                                    <option value="Norte">Norte</option>
-                                    <option value="Sur">Sur</option>
-                                    <option value="Centro">Centro</option>
-                                </select>
-                                <label for="zona"><i class="bi bi-geo-alt me-1"></i>Zona Cobertura</label>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
-                                <i class="bi bi-save me-2"></i>Guardar Abonado
-                            </button>
-                        </form>
-                    </div>
+                <div>
+                    <button type="button" class="btn btn-outline-primary fw-bold px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalBusqueda">
+                        <i class="bi bi-funnel-fill me-2"></i>Filtros Avanzados
+                    </button>
+                    <a th:if="${hayFiltros}" th:href="@{/clientes/abonados/registrar(db=${dbActiva})}" class="btn btn-light border text-danger fw-bold ms-2">
+                        <i class="bi bi-x-circle-fill me-1"></i>Limpiar Búsqueda
+                    </a>
                 </div>
+
+                <button type="button" class="btn btn-success fw-bold shadow-sm px-4" onclick="abrirModalNuevo()">
+                    <i class="bi bi-plus-lg me-2"></i>Nuevo Cliente
+                </button>
             </div>
 
-            <!-- Data-Table Mock (Derecha) -->
-            <div class="col-12 col-xl-8">
-                <div class="card premium-card h-100">
-                    <div class="card-header bg-white border-0 pt-4 pb-2 d-flex justify-content-between align-items-center">
-                        <h5 class="fw-bold text-secondary m-0">Últimos Registros</h5>
-                        <div class="input-group w-50 shadow-sm">
-                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                            <input type="text" class="form-control border-start-0 ps-0" placeholder="Buscar cliente por doc o nombre...">
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-custom table-hover align-middle mb-0">
+                    <thead class="table-light text-muted">
+                    <tr>
+                        <th class="ps-4 py-3">Documento</th>
+                        <th>Cliente</th>
+                        <th>Contacto</th>
+                        <th>Dirección / Equipo</th>
+                        <th>Estado</th>
+                        <th class="text-center pe-4">Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="abonado : ${paginaAbonados.content}">
+                        <td class="ps-4">
+                            <span class="fw-bold text-dark" th:text="${abonado.numDocIdentidad}"></span>
+                            <small class="text-muted d-block" th:text="${abonado.tipoDocIdentidad}"></small>
+                        </td>
+                        <td>
+                            <span class="fw-bold text-dark" th:text="${abonado.paterno + ' ' + (abonado.materno != null ? abonado.materno : '') + ', ' + abonado.pNombre}"></span>
+                            <small class="text-muted d-block mt-1" th:if="${abonado.fechaNacimiento != null}">
+                                <i class="bi bi-calendar3 me-1"></i>Nac: [[${abonado.fechaNacimiento}]]
+                                <span class="badge bg-secondary ms-2 rounded-pill px-2">[[${abonado.edad}]] años</span>
+                            </small>
+                        </td>
+                        <td>
+                            <small class="d-block"><i class="bi bi-phone text-muted me-1"></i>[[${abonado.celular}]]</small>
+                            <small class="text-muted text-truncate d-block" style="max-width: 150px;"><i class="bi bi-envelope text-muted me-1"></i>[[${abonado.correo}]]</small>
+                        </td>
+                        <td>
+                            <small class="d-block fw-semibold text-primary">Zona: [[${abonado.zona}]]</small>
+                            <small class="text-muted d-block">Casa: [[${abonado.numCasa}]] | Disp: [[${abonado.numDispositivo}]]</small>
+                        </td>
+                        <td>
+                            <span class="badge" th:classappend="${abonado.estAbonado == 'ACT' ? 'bg-success text-white' : (abonado.estAbonado == 'BAJ' ? 'bg-dark text-white' : 'bg-danger text-white')}" th:text="${abonado.estAbonado}"></span>
+                        </td>
+                        <td class="text-center pe-4">
+
+                            <button type="button" class="btn btn-sm btn-outline-info shadow-sm me-1" title="Ver Detalles"
+                                    th:attr="data-id=${abonado.idAbonado}, data-doc=${abonado.numDocIdentidad}, data-nombre=${abonado.paterno + ' ' + abonado.pNombre}, data-celular=${abonado.celular}, data-zona=${abonado.zona}, data-estado=${abonado.estAbonado}"
+                                    onclick="abrirModalVer(this)">
+                                <i class="bi bi-eye-fill"></i>
+                            </button>
+
+                            <button type="button" class="btn btn-sm btn-outline-primary shadow-sm me-1" title="Editar"
+                                    th:attr="data-id=${abonado.idAbonado}, data-tipo=${abonado.tipoDocIdentidad}, data-doc=${abonado.numDocIdentidad},
+                                                 data-pnombre=${abonado.pNombre}, data-snombre=${abonado.sNombre}, data-paterno=${abonado.paterno},
+                                                 data-materno=${abonado.materno}, data-fechanac=${abonado.fechaNacimiento},
+                                                 data-celular=${abonado.celular}, data-telefono=${abonado.telefono}, data-correo=${abonado.correo},
+                                                 data-zona=${abonado.zona}, data-numcasa=${abonado.numCasa}, data-numdisp=${abonado.numDispositivo},
+                                                 data-estado=${abonado.estAbonado}"
+                                    onclick="abrirModalEdicion(this)">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+
+                            <a th:href="@{/clientes/abonados/eliminar/{id}(id=${abonado.idAbonado}, db=${dbActiva})}" class="btn btn-sm btn-outline-danger shadow-sm" title="Dar de Baja" onclick="return confirm('¿Seguro que desea dar de baja a este cliente? Esto no borrará su historial.')"><i class="bi bi-person-x-fill"></i></a>
+                        </td>
+                    </tr>
+                    <tr th:if="${paginaAbonados.empty}">
+                        <td colspan="6" class="text-center py-5 text-muted">No se encontraron resultados con los filtros aplicados.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-footer bg-white border-top py-3 d-flex justify-content-between align-items-center flex-wrap">
+                <small class="text-muted fw-bold ps-2 mb-2 mb-md-0">Total: [[${paginaAbonados.totalElements}]] registros activos</small>
+
+                <nav th:if="${paginaAbonados.totalPages > 1}">
+                    <ul class="pagination mb-0 pe-2 align-items-center">
+                        <li class="page-item" th:classappend="${paginaAbonados.first ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{/clientes/abonados/registrar(db=${dbActiva}, page=${paginaAbonados.number - 1}, tipoDoc=${param.tipoDoc}, numDoc=${param.numDoc}, nombres=${param.nombres}, paterno=${param.paterno}, materno=${param.materno}, estado=${param.estado})}"><i class="bi bi-chevron-left"></i> Ant</a>
+                        </li>
+
+                        <li class="page-item d-flex align-items-center px-3 bg-light border-top border-bottom">
+                            <span class="me-2 text-muted fw-bold small">Pág.</span>
+                            <input type="number" class="form-control form-control-sm text-center fw-bold shadow-none"
+                                   style="width: 65px; border-color: #cbd5e1;"
+                                   th:value="${paginaAbonados.number + 1}"
+                                   th:max="${paginaAbonados.totalPages}" min="1"
+                                   onchange="saltarPagina(this.value, '[[${paginaAbonados.totalPages}]]')">
+                            <span class="ms-2 text-muted fw-bold small">de [[${paginaAbonados.totalPages}]]</span>
+                        </li>
+
+                        <li class="page-item" th:classappend="${paginaAbonados.last ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{/clientes/abonados/registrar(db=${dbActiva}, page=${paginaAbonados.number + 1}, tipoDoc=${param.tipoDoc}, numDoc=${param.numDoc}, nombres=${param.nombres}, paterno=${param.paterno}, materno=${param.materno}, estado=${param.estado})}">Sig <i class="bi bi-chevron-right"></i></a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="modalBusqueda" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4">
+                <div class="modal-header bg-light border-bottom">
+                    <h5 class="modal-title fw-bold text-dark"><i class="bi bi-funnel-fill text-primary me-2"></i>Filtros de Búsqueda</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form th:action="@{/clientes/abonados/registrar}" method="GET">
+                        <input type="hidden" name="db" th:value="${dbActiva}" />
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label class="fw-bold small text-muted">Tipo Doc.</label>
+                                <select class="form-select" name="tipoDoc" th:value="${param.tipoDoc}">
+                                    <option value="">Cualquiera...</option>
+                                    <option value="DNI" th:selected="${param.tipoDoc == 'DNI'}">DNI</option>
+                                    <option value="RUC" th:selected="${param.tipoDoc == 'RUC'}">RUC</option>
+                                    <option value="CE" th:selected="${param.tipoDoc == 'CE'}">CE</option>
+                                </select>
+                            </div>
+                            <div class="col-md-8">
+                                <label class="fw-bold small text-muted">Número Doc.</label>
+                                <input type="text" class="form-control" name="numDoc" th:value="${param.numDoc}">
+                            </div>
                         </div>
-                    </div>
-                    <div class="card-body p-0 table-responsive mt-2">
-                        <table class="table table-custom align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th class="ps-4">Documento</th>
-                                    <th>Datos Cliente</th>
-                                    <th>Zona</th>
-                                    <th>Instancia</th>
-                                    <th>Estado</th>
-                                    <th class="text-end pe-4">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="ps-4"><span class="fw-semibold">74581236</span> <small class="text-muted d-block">DNI</small></td>
-                                    <td>Juan Pérez Castro<br><small class="text-muted">juanp@email.com</small></td>
-                                    <td>Norte</td>
-                                    <td><span class="badge bg-primary">db_econo</span></td>
-                                    <td><span class="badge bg-success bg-opacity-10 text-success border border-success">Activo</span></td>
-                                    <td class="text-end pe-4"><button class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></button></td>
-                                </tr>
-                                <tr>
-                                    <td class="ps-4"><span class="fw-semibold">20548796321</span> <small class="text-muted d-block">RUC</small></td>
-                                    <td>Inversiones ABC SAC<br><small class="text-muted">contacto@abc.com</small></td>
-                                    <td>Centro</td>
-                                    <td><span class="badge bg-info text-dark">db_conexiondigital</span></td>
-                                    <td><span class="badge bg-success bg-opacity-10 text-success border border-success">Activo</span></td>
-                                    <td class="text-end pe-4"><button class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></button></td>
-                                </tr>
-                                <tr>
-                                    <td class="ps-4"><span class="fw-semibold">41258963</span> <small class="text-muted d-block">DNI</small></td>
-                                    <td>María Gómez Lopez<br><small class="text-muted">mariagl@email.com</small></td>
-                                    <td>Sur</td>
-                                    <td><span class="badge bg-primary">db_econo</span></td>
-                                    <td><span class="badge bg-danger bg-opacity-10 text-danger border border-danger">Suspendido</span></td>
-                                    <td class="text-end pe-4"><button class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></button></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-12">
+                                <label class="fw-bold small text-muted">Nombres (Búsqueda Parcial)</label>
+                                <input type="text" class="form-control" name="nombres" th:value="${param.nombres}">
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="fw-bold small text-muted">Apellido Paterno</label>
+                                <input type="text" class="form-control" name="paterno" th:value="${param.paterno}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="fw-bold small text-muted">Apellido Materno</label>
+                                <input type="text" class="form-control" name="materno" th:value="${param.materno}">
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-12">
+                                <label class="fw-bold small text-muted">Estado del Servicio</label>
+                                <input type="text" class="form-control" name="estado" th:value="${param.estado}">
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                            <a th:href="@{/clientes/abonados/registrar(db=${dbActiva})}" class="btn btn-light border fw-bold px-4">Limpiar</a>
+                            <button type="submit" class="btn btn-primary fw-bold px-4 shadow-sm"><i class="bi bi-search me-2"></i>Aplicar Filtros</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Script de Validación -->
+
+    <div class="modal fade" id="abonadoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0 rounded-4">
+                <div class="modal-header bg-light border-bottom">
+                    <h5 class="modal-title fw-bold text-dark" id="modalTitle"><i class="bi bi-person-lines-fill text-primary me-2"></i>Gestión de Cliente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="abonadoForm" th:action="@{/clientes/abonados/guardar}" method="POST" class="needs-validation" novalidate th:object="${abonadoDTO}">
+                        <input type="hidden" id="idAbonado" th:field="*{idAbonado}" />
+                        <input type="hidden" name="baseDatosDestino" th:value="${dbActiva}" />
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-3">
+                                <label class="form-label text-muted small fw-bold">Tipo Doc.</label>
+                                <select class="form-select" id="tipoDocIdentidad" th:field="*{tipoDocIdentidad}" required>
+                                    <option value="DNI">DNI</option>
+                                    <option value="RUC">RUC</option>
+                                    <option value="CE">CE</option>
+                                </select>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label text-muted small fw-bold">Número de Documento</label>
+                                <input type="text" class="form-control" id="numDocIdentidad" th:field="*{numDocIdentidad}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small fw-bold">Fecha de Nacimiento</label>
+                                <input type="date" class="form-control" id="fechaNacimiento" th:field="*{fechaNacimiento}">
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-bold">Primer Nombre / Razón Social</label>
+                                <input type="text" class="form-control" id="pNombre" th:field="*{pNombre}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-bold">Segundo Nombre</label>
+                                <input type="text" class="form-control" id="sNombre" th:field="*{sNombre}">
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-bold">Apellido Paterno</label>
+                                <input type="text" class="form-control" id="paterno" th:field="*{paterno}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-bold">Apellido Materno</label>
+                                <input type="text" class="form-control" id="materno" th:field="*{materno}">
+                            </div>
+                        </div>
+
+                        <hr class="text-muted">
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small fw-bold"><i class="bi bi-phone me-1"></i>Celular</label>
+                                <input type="tel" class="form-control" id="celular" th:field="*{celular}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small fw-bold"><i class="bi bi-telephone me-1"></i>Teléfono Fijo</label>
+                                <input type="tel" class="form-control" id="telefono" th:field="*{telefono}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small fw-bold"><i class="bi bi-envelope me-1"></i>Correo Electrónico</label>
+                                <input type="email" class="form-control" id="correo" th:field="*{correo}" required>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3">
+                                <label class="form-label text-muted small fw-bold">Num. Casa</label>
+                                <input type="text" class="form-control" id="numCasa" th:field="*{numCasa}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-muted small fw-bold">Num. Dispositivo</label>
+                                <input type="text" class="form-control" id="numDispositivo" th:field="*{numDispositivo}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-muted small fw-bold">Zona</label>
+                                <select class="form-select" id="zona" th:field="*{zona}" required>
+                                    <option value="NOR">Norte</option>
+                                    <option value="SUR">Sur</option>
+                                    <option value="CEN">Centro</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-muted small fw-bold">Estado</label>
+                                <select class="form-select border-success" id="estAbonado" th:field="*{estAbonado}" required>
+                                    <option value="ACT">Activo</option>
+                                    <option value="SUS">Suspendido</option>
+                                    <option value="BAJ">De Baja</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                            <button type="button" class="btn btn-light border fw-bold px-4" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary fw-bold px-4 shadow-sm" id="btnGuardar">Guardar Cliente</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="modalVerAbonado" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4">
+                <div class="modal-header bg-dark text-white border-bottom-0 rounded-top-4">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-file-person me-2"></i>Expediente del Cliente</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <div class="text-center mb-4">
+                        <div class="bg-secondary text-white rounded-circle d-inline-flex justify-content-center align-items-center mb-2" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <h4 class="fw-bold mb-0 text-dark" id="verNombre">Nombre Cliente</h4>
+                        <span class="badge bg-primary rounded-pill mt-1" id="verEstado">ESTADO</span>
+                    </div>
+
+                    <ul class="list-group list-group-flush shadow-sm rounded-3">
+                        <li class="list-group-item d-flex justify-content-between align-items-start py-3">
+                            <div class="ms-2 me-auto text-muted small fw-bold">Documento</div>
+                            <span class="fw-bold text-dark" id="verDoc">12345678</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-start py-3">
+                            <div class="ms-2 me-auto text-muted small fw-bold">ID Transaccional</div>
+                            <span class="fw-bold text-secondary">#<span id="verId">0</span></span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-start py-3">
+                            <div class="ms-2 me-auto text-muted small fw-bold">Zona de Cobertura</div>
+                            <span class="fw-bold text-dark" id="verZona">Norte</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-start py-3">
+                            <div class="ms-2 me-auto text-muted small fw-bold">Celular Principal</div>
+                            <span class="fw-bold text-primary" id="verCelular">999999999</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mover todos los modales al body para evitar el problema de z-index
+            document.body.appendChild(document.getElementById('modalBusqueda'));
+            document.body.appendChild(document.getElementById('abonadoModal'));
+            document.body.appendChild(document.getElementById('modalVerAbonado'));
+        });
+
+        function saltarPagina(paginaIngresada, totalPaginas) {
+            let pag = parseInt(paginaIngresada);
+            let total = parseInt(totalPaginas);
+            if (isNaN(pag) || pag < 1) pag = 1;
+            if (pag > total) pag = total;
+
+            // Reconstruye la URL de paginación manteniendo todos los filtros de la URL actual
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('page', pag - 1);
+            window.location.search = urlParams.toString();
+        }
+
+        // Abre el Modal de Creación Limpio
+        function abrirModalNuevo() {
+            document.getElementById('abonadoForm').reset();
+            document.getElementById('idAbonado').value = '';
+            document.getElementById('modalTitle').innerHTML = '<i class="bi bi-person-plus-fill text-success me-2"></i>Registrar Nuevo Cliente';
+            document.getElementById('btnGuardar').innerText = 'Guardar Cliente';
+            new bootstrap.Modal(document.getElementById('abonadoModal')).show();
+        }
+
+        // Abre el Modal de Edición Poblado
+        function abrirModalEdicion(btn) {
+            document.getElementById('idAbonado').value = btn.getAttribute('data-id');
+            document.getElementById('tipoDocIdentidad').value = btn.getAttribute('data-tipo');
+            document.getElementById('numDocIdentidad').value = btn.getAttribute('data-doc');
+            document.getElementById('pNombre').value = btn.getAttribute('data-pnombre');
+            document.getElementById('sNombre').value = btn.getAttribute('data-snombre');
+            document.getElementById('paterno').value = btn.getAttribute('data-paterno');
+            document.getElementById('materno').value = btn.getAttribute('data-materno');
+            document.getElementById('fechaNacimiento').value = btn.getAttribute('data-fechanac');
+            document.getElementById('celular').value = btn.getAttribute('data-celular');
+            document.getElementById('telefono').value = btn.getAttribute('data-telefono');
+            document.getElementById('correo').value = btn.getAttribute('data-correo');
+            document.getElementById('numCasa').value = btn.getAttribute('data-numcasa');
+            document.getElementById('numDispositivo').value = btn.getAttribute('data-numdisp');
+            document.getElementById('zona').value = btn.getAttribute('data-zona');
+            document.getElementById('estAbonado').value = btn.getAttribute('data-estado');
+
+            document.getElementById('modalTitle').innerHTML = '<i class="bi bi-pencil-square text-primary me-2"></i>Modificar Cliente #' + btn.getAttribute('data-id');
+            document.getElementById('btnGuardar').innerText = 'Actualizar Datos';
+            new bootstrap.Modal(document.getElementById('abonadoModal')).show();
+        }
+
+        // Abre el Modal de Solo Lectura
+        function abrirModalVer(btn) {
+            document.getElementById('verNombre').innerText = btn.getAttribute('data-nombre');
+            document.getElementById('verId').innerText = btn.getAttribute('data-id');
+            document.getElementById('verDoc').innerText = btn.getAttribute('data-doc');
+            document.getElementById('verZona').innerText = btn.getAttribute('data-zona');
+            document.getElementById('verCelular').innerText = btn.getAttribute('data-celular');
+
+            let estado = btn.getAttribute('data-estado');
+            let badge = document.getElementById('verEstado');
+            badge.innerText = estado;
+            badge.className = 'badge rounded-pill mt-1 ' + (estado === 'ACT' ? 'bg-success' : (estado === 'BAJ' ? 'bg-dark' : 'bg-danger'));
+
+            new bootstrap.Modal(document.getElementById('modalVerAbonado')).show();
+        }
+
         (() => {
             'use strict'
             const forms = document.querySelectorAll('.needs-validation')
             Array.from(forms).forEach(form => {
                 form.addEventListener('submit', event => {
                     if (!form.checkValidity()) {
-                        event.preventDefault()
-                        event.stopPropagation()
+                        event.preventDefault();
+                        event.stopPropagation();
                     }
                     form.classList.add('was-validated')
                 }, false)
             })
-        })()
+        })();
     </script>
 </div>
 </body>

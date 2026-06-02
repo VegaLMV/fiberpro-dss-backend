@@ -20,18 +20,4 @@ public class HomeController {
     return "dashboard";
   }
 
-  @GetMapping("/clientes/abonados/registrar")
-  public String mostrarAbonados(HttpSession session) {
-    return "abonados";
-  }
-
-  @GetMapping("/finanzas/abonos/registrar")
-  public String mostrarAbonos(HttpSession session) {
-    return "abonos";
-  }
-
-  @GetMapping("/nomina/registrar")
-  public String mostrarNomina(HttpSession session) {
-    return "nomina";
-  }
 }

@@ -2,12 +2,16 @@ package com.conexion.fiberpro.modules.finanzas.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
 @Entity
+@Getter
+@Setter
 @Table(name = "Abono")
 public class Abono {
 

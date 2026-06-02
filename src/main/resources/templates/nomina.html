@@ -1,147 +1,165 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}">
-<head><title>Nómina</title></head>
+<head><title>Nómina - Personal</title></head>
 <body>
 <div layout:fragment="content" th:fragment="content">
-    <style>
-        .zoom-in { animation: zoomIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: scale(0.97); }
-        @keyframes zoomIn { to { opacity: 1; transform: scale(1); } }
 
-        .header-gradient { background: linear-gradient(90deg, #0d1b2a, #1b3a57); border-radius: 12px; padding: 25px; color: white; margin-bottom: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
-        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(0,0,0,0.05); border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+    <div class="container-fluid fade-in-up">
 
-        .modal-premium .modal-content { border-radius: 15px; border: none; box-shadow: 0 25px 50px rgba(0,0,0,0.2); }
-        .modal-premium .modal-header { background: #f8f9fa; border-bottom: 2px solid #e9ecef; border-radius: 15px 15px 0 0; }
-        .table-nomina th { background-color: #f1f3f5; font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; }
-    </style>
-
-    <div class="container-fluid zoom-in">
-
-        <div class="header-gradient d-flex justify-content-between align-items-center">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
             <div>
-                <h3 class="fw-bold m-0"><i class="bi bi-person-lines-fill me-2 text-warning"></i>Gestión de Nómina</h3>
-                <p class="text-white-50 m-0 mt-1">Administración de paquetes y filiales de empleados</p>
+                <h3 class="fw-bold text-dark mb-0"><i class="bi bi-person-vcard-fill text-warning me-2"></i>Gestión de Nómina</h3>
+                <p class="text-muted small mb-0">Control de suscripciones CableGo - 50 Registros por bloque</p>
             </div>
-            <button class="btn btn-warning fw-bold px-4 py-2 rounded-pill shadow" data-bs-toggle="modal" data-bs-target="#nominaModal">
-                <i class="bi bi-plus-lg me-1"></i> Nuevo Registro
-            </button>
+            <ul class="nav nav-pills db-switcher-nav shadow-sm bg-white rounded p-1">
+                <li class="nav-item">
+                    <a class="nav-link db-tab-link fw-bold" th:classappend="${dbActiva == 'econo' ? 'active bg-warning text-dark' : 'text-muted'}" th:href="@{/nomina/registrar(db='econo')}">EconoCable</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link db-tab-link fw-bold" th:classappend="${dbActiva == 'conexion' ? 'active bg-warning text-dark' : 'text-muted'}" th:href="@{/nomina/registrar(db='conexion')}">Conexión Digital</a>
+                </li>
+            </ul>
         </div>
 
-        <div th:if="${param.exito}" class="alert alert-success alert-dismissible fade show border-0 border-start border-success border-5 shadow-sm" role="alert">
-            <i class="bi bi-check-circle-fill me-2 text-success"></i>Registro de nómina guardado exitosamente.
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-        </div>
+        <div th:if="${param.exito}" class="alert alert-success shadow-sm"><i class="bi bi-check-circle-fill me-2"></i> Registro procesado exitosamente.</div>
+        <div th:if="${param.eliminado}" class="alert alert-warning shadow-sm"><i class="bi bi-trash-fill me-2"></i> El registro ha sido dado de baja (Eliminación Lógica).</div>
 
-        <div class="card glass-card">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover table-nomina align-middle m-0">
-                        <thead>
-                        <tr>
-                            <th class="ps-4 py-3">ID</th>
-                            <th class="py-3">Empleado</th>
-                            <th class="py-3">Doc. Identidad</th>
-                            <th class="py-3">Filial</th>
-                            <th class="py-3">Paquete</th>
-                            <th class="text-end py-3 pe-4">Total Mensual</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr th:each="nomina : ${listaNominas}">
-                            <td class="ps-4 fw-bold text-muted" th:text="${'#N-' + nomina.idDet_NominaCableGo}">#N-000</td>
-                            <td>
-                                <div class="d-flex align-items-center my-2">
-                                    <div class="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px; font-weight: bold;">
-                                        <i class="bi bi-person"></i>
-                                    </div>
-                                    <div>
-                                        <span class="fw-bold d-block text-dark" th:text="${nomina.nombres}">Nombre Empleado</span>
-                                        <small class="text-muted" th:text="'Vendedor: ' + ${nomina.vendedor}">Vendedor</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td th:text="${nomina.docIdent}">00000000</td>
-                            <td><span class="text-secondary fw-semibold"><i class="bi bi-building me-1"></i><span th:text="${nomina.filial}">Filial</span></span></td>
-                            <td th:text="${nomina.paquetePrincipal}">Paquete</td>
-                            <td class="text-end pe-4 fw-bold text-dark fs-5" th:text="${nomina.totalMensual}">$0.00</td>
-                        </tr>
-
-                        <tr th:if="${listaNominas == null or listaNominas.empty}">
-                            <td colspan="6" class="text-center py-5 text-muted">
-                                <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-                                No hay registros de nómina para mostrar.
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
+        <!-- Panel Principal -->
+        <div class="card card-premium mb-4">
+            <div class="card-header bg-white border-bottom pt-4 pb-3 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <button type="button" class="btn btn-outline-warning text-dark fw-bold px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalBusqueda">
+                        <i class="bi bi-funnel-fill me-2"></i>Filtros Avanzados
+                    </button>
+                    <a th:if="${hayFiltros}" th:href="@{/nomina/registrar(db=${dbActiva})}" class="btn btn-light border text-danger fw-bold ms-2">
+                        <i class="bi bi-x-circle-fill me-1"></i>Limpiar Filtros
+                    </a>
                 </div>
+                <button type="button" class="btn btn-warning fw-bold shadow-sm px-4" onclick="abrirModalNuevo()">
+                    <i class="bi bi-plus-lg me-2"></i>Nuevo Registro
+                </button>
             </div>
-            <div class="card-footer bg-white border-0 py-3 text-center text-muted small rounded-bottom-4">
-                Listado de registros de Nómina CableGo
+
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-custom table-hover align-middle mb-0">
+                    <thead class="table-light text-muted">
+                    <tr>
+                        <th class="ps-4 py-3">ID / Doc</th>
+                        <th>Nombres</th>
+                        <th>Filial / Vendedor</th>
+                        <th>Paquete / Mensual</th>
+                        <th>Estado</th>
+                        <th class="text-center pe-4">Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="nomina : ${paginaNominas.content}">
+                        <td class="ps-4">
+                            <span class="fw-bold text-muted d-block">#N-[[${nomina.idDetNominaCableGo}]]</span>
+                            <small class="text-dark fw-semibold" th:text="${nomina.docIdent}"></small>
+                        </td>
+                        <td>
+                            <span class="fw-bold text-dark" th:text="${nomina.nombres}"></span><br>
+                            <small class="text-muted"><i class="bi bi-envelope me-1"></i>[[${nomina.correo}]]</small>
+                        </td>
+                        <td>
+                            <span class="d-block fw-semibold text-primary"><i class="bi bi-building me-1"></i>[[${nomina.filial}]]</span>
+                            <small class="text-muted"><i class="bi bi-person-badge me-1"></i>[[${nomina.vendedor}]]</small>
+                        </td>
+                        <td>
+                            <span class="d-block fw-semibold text-dark">[[${nomina.paquetePrincipal}]]</span>
+                            <span class="badge bg-light text-success border fw-bold fs-6">$[[${nomina.totalMensual}]]</span>
+                        </td>
+                        <td>
+                            <span class="badge" th:classappend="${nomina.estadoServicio == 'ACTIVO' ? 'bg-success' : (nomina.estadoServicio == 'CORTADO' ? 'bg-danger' : 'bg-secondary')}" th:text="${nomina.estadoServicio}"></span>
+                        </td>
+                        <td class="text-center pe-4">
+                            <button type="button" class="btn btn-sm btn-outline-info shadow-sm me-1" title="Ver"
+                                    th:attr="data-id=${nomina.idDetNominaCableGo}, data-nombre=${nomina.nombres}, data-doc=${nomina.docIdent}, data-paquete=${nomina.paquetePrincipal}, data-total=${nomina.totalMensual}, data-estado=${nomina.estadoServicio}, data-filial=${nomina.filial}"
+                                    onclick="abrirModalVer(this)"><i class="bi bi-eye-fill"></i></button>
+
+                            <button type="button" class="btn btn-sm btn-outline-warning text-dark shadow-sm me-1" title="Editar"
+                                    th:attr="data-id=${nomina.idDetNominaCableGo}, data-nombre=${nomina.nombres}, data-doc=${nomina.docIdent}, data-correo=${nomina.correo}, data-celular=${nomina.celular}, data-estado=${nomina.estadoServicio}, data-paquete=${nomina.paquetePrincipal}, data-total=${nomina.totalMensual}, data-vendedor=${nomina.vendedor}, data-filial=${nomina.filial}"
+                                    onclick="abrirModalEdicion(this)"><i class="bi bi-pencil-square"></i></button>
+
+                            <a th:href="@{/nomina/eliminar/{id}(id=${nomina.idDetNominaCableGo}, db=${dbActiva})}" class="btn btn-sm btn-outline-danger shadow-sm" title="Dar de Baja" onclick="return confirm('¿Seguro que desea eliminar lógicamente este registro?')"><i class="bi bi-trash3-fill"></i></a>
+                        </td>
+                    </tr>
+                    <tr th:if="${paginaNominas.empty}">
+                        <td colspan="6" class="text-center py-5 text-muted">No se encontraron registros.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- CONTROLES DE PAGINACIÓN -->
+            <div class="card-footer bg-white border-top py-3 d-flex justify-content-between align-items-center flex-wrap">
+                <small class="text-muted fw-bold ps-2 mb-2 mb-md-0">Total: [[${paginaNominas.totalElements}]] registros</small>
+
+                <nav th:if="${paginaNominas.totalPages > 1}">
+                    <ul class="pagination mb-0 pe-2 align-items-center">
+                        <li class="page-item" th:classappend="${paginaNominas.first ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{/nomina/registrar(db=${dbActiva}, page=${paginaNominas.number - 1}, nombres=${param.nombres}, docIdent=${param.docIdent}, estado=${param.estado}, filial=${param.filial})}"><i class="bi bi-chevron-left"></i></a>
+                        </li>
+
+                        <li class="page-item d-flex align-items-center px-3 bg-light border-top border-bottom">
+                            <span class="me-2 text-muted fw-bold small">Pág.</span>
+                            <input type="number" class="form-control form-control-sm text-center fw-bold shadow-none"
+                                   style="width: 65px; border-color: #cbd5e1;"
+                                   th:value="${paginaNominas.number + 1}"
+                                   th:max="${paginaNominas.totalPages}" min="1"
+                                   onchange="saltarPagina(this.value, '[[${paginaNominas.totalPages}]]')">
+                            <span class="ms-2 text-muted fw-bold small">de [[${paginaNominas.totalPages}]]</span>
+                        </li>
+
+                        <li class="page-item" th:classappend="${paginaNominas.last ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{/nomina/registrar(db=${dbActiva}, page=${paginaNominas.number + 1}, nombres=${param.nombres}, docIdent=${param.docIdent}, estado=${param.estado}, filial=${param.filial})}"><i class="bi bi-chevron-right"></i></a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
         </div>
     </div>
 
-    <div class="modal fade modal-premium" id="nominaModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header px-4 py-3">
-                    <h5 class="modal-title fw-bold text-dark"><i class="bi bi-file-earmark-person-fill text-warning me-2"></i>Registrar Nómina</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <!-- ==============================================
+         MODAL 1: BÚSQUEDA AVANZADA
+         ============================================== -->
+    <div class="modal fade" id="modalBusqueda" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4">
+                <div class="modal-header bg-light border-bottom">
+                    <h5 class="modal-title fw-bold text-dark"><i class="bi bi-funnel-fill text-warning me-2"></i>Filtros de Nómina</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <form th:action="@{/nomina/guardar}" method="POST" class="needs-validation" novalidate>
+                    <form th:action="@{/nomina/registrar}" method="GET">
+                        <input type="hidden" name="db" th:value="${dbActiva}" />
 
-                        <div class="alert alert-light border-warning border-start border-4 mb-4" role="alert">
-                            <label class="fw-bold text-dark mb-2"><i class="bi bi-server me-1"></i>Selección de Entorno (Requerido)</label>
-                            <select name="baseDatosDestino" class="form-select border-warning shadow-sm" required>
-                                <option value="" selected disabled>Elija la Base de Datos...</option>
-                                <option value="econo">EconoCable (db_econo)</option>
-                                <option value="conexion">Conexión Digital (db_conexiondigital)</option>
-                            </select>
-                            <div class="invalid-feedback">Debe seleccionar la base de datos origen.</div>
+                        <div class="mb-3">
+                            <label class="fw-bold small text-muted">Nombres o Apellidos</label>
+                            <input type="text" class="form-control" name="nombres" th:value="${param.nombres}">
                         </div>
 
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-8">
-                                <label class="form-label text-muted small fw-bold">Nombres Completos</label>
-                                <input type="text" class="form-control" name="nombres" required>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="fw-bold small text-muted">Documento de Identidad</label>
+                                <input type="text" class="form-control" name="docIdent" th:value="${param.docIdent}">
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label text-muted small fw-bold">Doc. Identidad</label>
-                                <input type="text" class="form-control" name="docIdent" required>
+                            <div class="col-md-6">
+                                <label class="fw-bold small text-muted">Estado del Servicio</label>
+                                <input type="text" class="form-control" name="estado" th:value="${param.estado}" placeholder="ACTIVO, CORTADO...">
                             </div>
                         </div>
 
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label text-muted small fw-bold">Paquete Principal</label>
-                                <input type="text" class="form-control" name="paquetePrincipal" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label text-muted small fw-bold">Total Mensual</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light">$</span>
-                                    <input type="number" step="0.01" class="form-control" name="totalMensual" required>
-                                </div>
-                            </div>
+                        <div class="mb-4">
+                            <label class="fw-bold small text-muted">Filial</label>
+                            <input type="text" class="form-control" name="filial" th:value="${param.filial}">
                         </div>
 
-                        <div class="row g-3 mb-2">
-                            <div class="col-md-6">
-                                <label class="form-label text-muted small fw-bold"><i class="bi bi-building me-1"></i>Filial</label>
-                                <input type="text" class="form-control" name="filial" required placeholder="Ej: Ica Centro">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label text-muted small fw-bold"><i class="bi bi-person-badge me-1"></i>Vendedor Asignado</label>
-                                <input type="text" class="form-control" name="vendedor" required>
-                            </div>
-                        </div>
-
-                        <hr class="my-4">
-                        <div class="d-flex justify-content-end gap-2">
-                            <button type="button" class="btn btn-light fw-bold px-4 border" data-bs-dismiss="modal">Cancelar</button>
-                            <button type="submit" class="btn btn-warning fw-bold px-4 shadow-sm"><i class="bi bi-save me-2"></i>Guardar Registro</button>
+                        <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                            <a th:href="@{/nomina/registrar(db=${dbActiva})}" class="btn btn-light border fw-bold px-4">Limpiar</a>
+                            <button type="submit" class="btn btn-warning text-dark fw-bold px-4"><i class="bi bi-search me-2"></i>Aplicar Filtros</button>
                         </div>
                     </form>
                 </div>
@@ -149,20 +167,193 @@
         </div>
     </div>
 
+    <!-- ==============================================
+         MODAL 2: CREAR / EDITAR NÓMINA
+         ============================================== -->
+    <div class="modal fade" id="nominaModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0 rounded-4">
+                <div class="modal-header bg-warning text-dark border-bottom-0">
+                    <h5 class="modal-title fw-bold" id="modalTitle"><i class="bi bi-person-vcard me-2"></i>Formulario de Nómina</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <form id="nominaForm" th:action="@{/nomina/guardar}" method="POST" class="needs-validation" novalidate th:object="${nominaDTO}">
+                        <input type="hidden" id="idDetNomina" th:field="*{idDetNominaCableGo}" />
+                        <input type="hidden" name="baseDatosDestino" th:value="${dbActiva}" />
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-8">
+                                <label class="fw-bold small text-muted">Nombres Completos</label>
+                                <input type="text" class="form-control" id="nombresInput" th:field="*{nombres}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="fw-bold small text-muted">Doc. Identidad</label>
+                                <input type="text" class="form-control" id="docInput" th:field="*{docIdent}" required>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="fw-bold small text-muted">Correo</label>
+                                <input type="email" class="form-control" id="correoInput" th:field="*{correo}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="fw-bold small text-muted">Celular</label>
+                                <input type="text" class="form-control" id="celularInput" th:field="*{celular}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="fw-bold small text-muted">Estado</label>
+                                <input type="text" class="form-control border-warning" id="estadoInput" th:field="*{estadoServicio}" placeholder="Ej. ACTIVO">
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="fw-bold small text-muted">Paquete Principal</label>
+                                <input type="text" class="form-control" id="paqueteInput" th:field="*{paquetePrincipal}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="fw-bold small text-muted">Total Mensual</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" step="0.01" class="form-control" id="totalInput" th:field="*{totalMensual}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4 border-top pt-3">
+                            <div class="col-md-6">
+                                <label class="fw-bold small text-muted">Filial</label>
+                                <input type="text" class="form-control" id="filialInput" th:field="*{filial}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="fw-bold small text-muted">Vendedor Asignado</label>
+                                <input type="text" class="form-control" id="vendedorInput" th:field="*{vendedor}">
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-3">
+                            <button type="button" class="btn btn-secondary fw-bold px-4" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-warning fw-bold px-4 shadow-sm" id="btnGuardar">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==============================================
+         MODAL 3: VER DETALLES (SÓLO LECTURA)
+         ============================================== -->
+    <div class="modal fade" id="modalVerNomina" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4">
+                <div class="modal-header bg-dark text-white border-bottom-0 rounded-top-4">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-file-person me-2"></i>Detalle de Nómina</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 bg-light text-center">
+                    <h4 class="fw-bold text-dark mb-1" id="verNombre">Nombres</h4>
+                    <p class="text-muted mb-2" id="verDoc">Documento</p>
+                    <span class="badge rounded-pill px-3 py-2 mb-4" id="verEstado">ESTADO</span>
+
+                    <ul class="list-group list-group-flush shadow-sm rounded-3 text-start">
+                        <li class="list-group-item d-flex justify-content-between py-3">
+                            <span class="text-muted small fw-bold">ID Transaccional</span>
+                            <span class="fw-bold text-dark" id="verId">#0</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between py-3">
+                            <span class="text-muted small fw-bold">Filial Asignada</span>
+                            <span class="fw-bold text-primary" id="verFilial">Filial</span>
+                        </li>
+                        <li class="list-group-item py-3">
+                            <span class="text-muted small fw-bold d-block mb-1">Paquete Principal</span>
+                            <span class="fw-medium text-dark" id="verPaquete">Paquete</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between py-3 bg-white">
+                            <span class="text-muted small fw-bold mt-1">Costo Mensual</span>
+                            <span class="fw-bold text-success fs-5" id="verTotal">$0.00</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.appendChild(document.getElementById('modalBusqueda'));
+            document.body.appendChild(document.getElementById('nominaModal'));
+            document.body.appendChild(document.getElementById('modalVerNomina'));
+        });
+
+        function saltarPagina(paginaIngresada, totalPaginas) {
+            let pag = parseInt(paginaIngresada);
+            let total = parseInt(totalPaginas);
+            if (isNaN(pag) || pag < 1) pag = 1;
+            if (pag > total) pag = total;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('page', pag - 1);
+            window.location.search = urlParams.toString();
+        }
+
+        function abrirModalNuevo() {
+            document.getElementById('nominaForm').reset();
+            document.getElementById('idDetNomina').value = '';
+            document.getElementById('modalTitle').innerHTML = '<i class="bi bi-person-plus-fill me-2"></i>Registrar en Nómina';
+            document.getElementById('btnGuardar').innerText = 'Guardar';
+            new bootstrap.Modal(document.getElementById('nominaModal')).show();
+        }
+
+        function abrirModalEdicion(btn) {
+            document.getElementById('idDetNomina').value = btn.getAttribute('data-id');
+            document.getElementById('nombresInput').value = btn.getAttribute('data-nombre');
+            document.getElementById('docInput').value = btn.getAttribute('data-doc');
+            document.getElementById('correoInput').value = btn.getAttribute('data-correo');
+            document.getElementById('celularInput').value = btn.getAttribute('data-celular');
+            document.getElementById('estadoInput').value = btn.getAttribute('data-estado');
+            document.getElementById('paqueteInput').value = btn.getAttribute('data-paquete');
+            document.getElementById('totalInput').value = btn.getAttribute('data-total');
+            document.getElementById('vendedorInput').value = btn.getAttribute('data-vendedor');
+            document.getElementById('filialInput').value = btn.getAttribute('data-filial');
+
+            document.getElementById('modalTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i>Editar Nómina #' + btn.getAttribute('data-id');
+            document.getElementById('btnGuardar').innerText = 'Actualizar';
+            new bootstrap.Modal(document.getElementById('nominaModal')).show();
+        }
+
+        function abrirModalVer(btn) {
+            document.getElementById('verId').innerText = '#' + btn.getAttribute('data-id');
+            document.getElementById('verNombre').innerText = btn.getAttribute('data-nombre');
+            document.getElementById('verDoc').innerText = btn.getAttribute('data-doc');
+            document.getElementById('verPaquete').innerText = btn.getAttribute('data-paquete');
+            document.getElementById('verTotal').innerText = '$' + parseFloat(btn.getAttribute('data-total')).toFixed(2);
+            document.getElementById('verFilial').innerText = btn.getAttribute('data-filial');
+
+            let estado = btn.getAttribute('data-estado');
+            let badge = document.getElementById('verEstado');
+            badge.innerText = estado;
+            badge.className = 'badge rounded-pill px-3 py-2 mb-4 ' + (estado === 'ACTIVO' ? 'bg-success' : (estado === 'CORTADO' ? 'bg-danger' : 'bg-secondary'));
+
+            new bootstrap.Modal(document.getElementById('modalVerNomina')).show();
+        }
+
         (() => {
             'use strict'
             const forms = document.querySelectorAll('.needs-validation')
             Array.from(forms).forEach(form => {
                 form.addEventListener('submit', event => {
                     if (!form.checkValidity()) {
-                        event.preventDefault()
-                        event.stopPropagation()
+                        event.preventDefault();
+                        event.stopPropagation();
                     }
                     form.classList.add('was-validated')
                 }, false)
             })
-        })()
+        })();
     </script>
 </div>
 </body>

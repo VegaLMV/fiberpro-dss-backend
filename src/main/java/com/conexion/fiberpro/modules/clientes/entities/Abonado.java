@@ -2,6 +2,9 @@ package com.conexion.fiberpro.modules.clientes.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 /**
@@ -11,6 +14,8 @@ import java.time.LocalDateTime;
  */
 @Data
 @Entity
+@Getter
+@Setter
 @Table(name = "Abonado")
 public class Abonado {
 
@@ -52,6 +57,25 @@ public class Abonado {
     @Column(name = "Correo", length = 1024)
     private String correo;
 
+    @Column(name = "Telefono", length = 100)
+    private String telefono;
+
+    @Column(name = "NumCasa", length = 100)
+    private String numCasa;
+
+    @Column(name = "NumDispositivo", length = 100)
+    private String numDispositivo;
+
+    @Column(name = "FechaNacimiento")
+    private java.time.LocalDate fechaNacimiento;
+    @Transient
+    public Integer getEdad() {
+        if (this.fechaNacimiento == null) {
+            return null;
+        }
+        return java.time.Period.between(this.fechaNacimiento, java.time.LocalDate.now()).getYears();
+    }
+
     @Column(name = "EstAbonado", length = 3)
     private String estAbonado;
 
@@ -63,4 +87,7 @@ public class Abonado {
 
     @Column(name = "FechaSuscripcion")
     private LocalDateTime fechaSuscripcion;
+
+    @Column(name = "IndEliminacionUsuario")
+    private Integer indEliminacionUsuario;
 }

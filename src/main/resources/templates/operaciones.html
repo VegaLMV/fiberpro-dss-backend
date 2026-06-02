@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}">
+<head><title>Operaciones - Órdenes de Servicio</title></head>
+<body>
+<div layout:fragment="content" th:fragment="content">
+
+    <div class="container-fluid fade-in-up">
+
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+            <div>
+                <h3 class="fw-bold text-dark mb-0"><i class="bi bi-tools text-primary me-2"></i>Órdenes de Servicio</h3>
+                <p class="text-muted small mb-0">Planta Externa - Gestión de OS Paginada</p>
+            </div>
+            <ul class="nav nav-pills db-switcher-nav shadow-sm bg-white rounded p-1">
+                <li class="nav-item">
+                    <a class="nav-link db-tab-link fw-bold" th:classappend="${dbActiva == 'econo' ? 'active bg-primary text-white' : 'text-muted'}" th:href="@{/operaciones/ordenes/registrar(db='econo')}">EconoCable</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link db-tab-link fw-bold" th:classappend="${dbActiva == 'conexion' ? 'active bg-primary text-white' : 'text-muted'}" th:href="@{/operaciones/ordenes/registrar(db='conexion')}">Conexión Digital</a>
+                </li>
+            </ul>
+        </div>
+
+        <div th:if="${param.exito}" class="alert alert-success shadow-sm"><i class="bi bi-check-circle-fill me-2"></i> Orden guardada correctamente.</div>
+        <div th:if="${param.eliminado}" class="alert alert-warning shadow-sm"><i class="bi bi-x-octagon-fill me-2"></i> Orden anulada exitosamente.</div>
+
+        <div class="card card-premium mb-4">
+            <div class="card-header bg-white border-bottom pt-4 pb-3 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <button type="button" class="btn btn-outline-primary fw-bold px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalBusqueda">
+                        <i class="bi bi-funnel-fill me-2"></i>Filtros de OS
+                    </button>
+                    <a th:if="${hayFiltros}" th:href="@{/operaciones/ordenes/registrar(db=${dbActiva})}" class="btn btn-light border text-danger fw-bold ms-2">
+                        <i class="bi bi-x-circle-fill me-1"></i>Limpiar
+                    </a>
+                </div>
+                <button type="button" class="btn btn-success fw-bold shadow-sm px-4" onclick="abrirModalNuevo()">
+                    <i class="bi bi-plus-lg me-2"></i>Nueva Orden
+                </button>
+            </div>
+
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-custom table-hover align-middle mb-0">
+                    <thead class="table-light text-muted">
+                    <tr>
+                        <th class="ps-4 py-3">Número OS</th>
+                        <th>Abonado</th>
+                        <th>Servicio / Tipo</th>
+                        <th>Observaciones</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center pe-4">Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="orden : ${paginaOrdenes.content}">
+                        <td class="ps-4 fw-bold text-dark">OS-[[${orden.numeroOS != null ? orden.numeroOS : orden.idOS}]]</td>
+                        <td><span class="badge bg-light text-dark border">[[${orden.idAbonado}]]</span></td>
+                        <td>
+                            <span class="d-block fw-semibold text-primary">[[${orden.claseServicio}]]</span>
+                            <small class="text-muted">Tipo: [[${orden.tipoOS}]]</small>
+                        </td>
+                        <td class="text-truncate" style="max-width: 200px;">
+                            <small class="text-muted">[[${orden.observaciones}]]</small>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge" th:classappend="${orden.estOS == 'EJE' ? 'bg-success text-white' : (orden.estOS == 'PEN' ? 'bg-warning text-dark' : 'bg-secondary text-white')}" th:text="${orden.estOS}"></span>
+                        </td>
+                        <td class="text-center pe-4">
+                            <button type="button" class="btn btn-sm btn-outline-info shadow-sm me-1" title="Ver Detalles"
+                                    th:attr="data-id=${orden.idOS}, data-num=${orden.numeroOS}, data-abonado=${orden.idAbonado}, data-tipo=${orden.tipoOS}, data-clase=${orden.claseServicio}, data-estado=${orden.estOS}, data-tecnico=${orden.idTecnico}, data-obs=${orden.observaciones}"
+                                    onclick="abrirModalVer(this)"><i class="bi bi-eye-fill"></i></button>
+
+                            <button type="button" class="btn btn-sm btn-outline-primary shadow-sm me-1" title="Editar"
+                                    th:attr="data-id=${orden.idOS}, data-num=${orden.numeroOS}, data-abonado=${orden.idAbonado}, data-tipo=${orden.tipoOS}, data-clase=${orden.claseServicio}, data-estado=${orden.estOS}, data-tecnico=${orden.idTecnico}, data-obs=${orden.observaciones}"
+                                    onclick="abrirModalEdicion(this)"><i class="bi bi-pencil-square"></i></button>
+
+                            <a th:href="@{/operaciones/ordenes/eliminar/{id}(id=${orden.idOS}, db=${dbActiva})}" class="btn btn-sm btn-outline-danger shadow-sm" title="Anular" onclick="return confirm('¿Seguro que desea anular esta Orden de Servicio?')"><i class="bi bi-x-octagon-fill"></i></a>
+                        </td>
+                    </tr>
+                    <tr th:if="${paginaOrdenes.empty}">
+                        <td colspan="6" class="text-center py-5 text-muted">No se encontraron Órdenes de Servicio.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-footer bg-white border-top py-3 d-flex justify-content-between align-items-center flex-wrap">
+                <small class="text-muted fw-bold ps-2 mb-2 mb-md-0">Total: [[${paginaOrdenes.totalElements}]] registros</small>
+                <nav th:if="${paginaOrdenes.totalPages > 1}">
+                    <ul class="pagination mb-0 pe-2 align-items-center">
+                        <li class="page-item" th:classappend="${paginaOrdenes.first ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{/operaciones/ordenes/registrar(db=${dbActiva}, page=${paginaOrdenes.number - 1}, numeroOS=${param.numeroOS}, idAbonado=${param.idAbonado}, tipoOS=${param.tipoOS}, estOS=${param.estOS})}">Ant</a>
+                        </li>
+                        <li class="page-item d-flex align-items-center px-3 bg-light border-top border-bottom">
+                            <span class="me-2 text-muted fw-bold small">Pág.</span>
+                            <input type="number" class="form-control form-control-sm text-center fw-bold shadow-none"
+                                   style="width: 65px; border-color: #cbd5e1;" th:value="${paginaOrdenes.number + 1}"
+                                   th:max="${paginaOrdenes.totalPages}" min="1" onchange="saltarPagina(this.value, '[[${paginaOrdenes.totalPages}]]')">
+                            <span class="ms-2 text-muted fw-bold small">de [[${paginaOrdenes.totalPages}]]</span>
+                        </li>
+                        <li class="page-item" th:classappend="${paginaOrdenes.last ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{/operaciones/ordenes/registrar(db=${dbActiva}, page=${paginaOrdenes.number + 1}, numeroOS=${param.numeroOS}, idAbonado=${param.idAbonado}, tipoOS=${param.tipoOS}, estOS=${param.estOS})}">Sig</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalBusqueda" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4">
+                <div class="modal-header bg-light border-bottom">
+                    <h5 class="modal-title fw-bold text-dark"><i class="bi bi-funnel-fill text-primary me-2"></i>Filtros OS</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form th:action="@{/operaciones/ordenes/registrar}" method="GET">
+                        <input type="hidden" name="db" th:value="${dbActiva}" />
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="fw-bold small text-muted">Número de OS</label>
+                                <input type="number" class="form-control" name="numeroOS" th:value="${param.numeroOS}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="fw-bold small text-muted">ID Abonado</label>
+                                <input type="number" class="form-control" name="idAbonado" th:value="${param.idAbonado}">
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="fw-bold small text-muted">Tipo OS (INS, COR...)</label>
+                                <input type="text" class="form-control" name="tipoOS" th:value="${param.tipoOS}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="fw-bold small text-muted">Estado Actual</label>
+                                <select class="form-select" name="estOS" th:value="${param.estOS}">
+                                    <option value="">Todos...</option>
+                                    <option value="PEN" th:selected="${param.estOS == 'PEN'}">Pendiente (PEN)</option>
+                                    <option value="EJE" th:selected="${param.estOS == 'EJE'}">Ejecutada (EJE)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                            <a th:href="@{/operaciones/ordenes/registrar(db=${dbActiva})}" class="btn btn-light border fw-bold px-4">Limpiar</a>
+                            <button type="submit" class="btn btn-primary fw-bold px-4"><i class="bi bi-search me-2"></i>Buscar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="ordenModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0 rounded-4">
+                <div class="modal-header bg-light border-bottom">
+                    <h5 class="modal-title fw-bold text-dark" id="modalTitle"><i class="bi bi-tools text-primary me-2"></i>Gestión de Orden</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="ordenForm" th:action="@{/operaciones/ordenes/guardar}" method="POST" class="needs-validation" novalidate th:object="${ordenDTO}">
+                        <input type="hidden" id="idOS" th:field="*{idOS}" />
+                        <input type="hidden" name="baseDatosDestino" th:value="${dbActiva}" />
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="fw-bold small text-muted">ID Abonado</label>
+                                <input type="number" class="form-control" id="idAbonadoInput" th:field="*{idAbonado}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="fw-bold small text-muted">Número OS (Opcional)</label>
+                                <input type="number" class="form-control" id="numeroOSInput" th:field="*{numeroOS}">
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label class="fw-bold small text-muted">Tipo OS</label>
+                                <input type="text" class="form-control" id="tipoOSInput" th:field="*{tipoOS}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="fw-bold small text-muted">Clase Servicio</label>
+                                <input type="text" class="form-control" id="claseServicioInput" th:field="*{claseServicio}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="fw-bold small text-muted">Estado</label>
+                                <input type="text" class="form-control border-primary" id="estadoInput" th:field="*{estOS}" required>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="fw-bold small text-muted">ID Técnico</label>
+                                <input type="number" class="form-control" id="tecnicoInput" th:field="*{idTecnico}">
+                            </div>
+                            <div class="col-md-8">
+                                <label class="fw-bold small text-muted">Observaciones</label>
+                                <textarea class="form-control" id="obsInput" th:field="*{observaciones}" rows="2"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                            <button type="button" class="btn btn-light border fw-bold px-4" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary fw-bold px-4 shadow-sm" id="btnGuardar">Guardar Orden</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalVerOrden" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4">
+                <div class="modal-header bg-dark text-white border-bottom-0 rounded-top-4">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-file-text me-2"></i>Detalles de OS</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 bg-light text-center">
+                    <h4 class="fw-bold text-dark mb-1" id="verNumOS">OS-000</h4>
+                    <span class="badge rounded-pill px-3 py-2 mb-4 mt-2" id="verEstado">ESTADO</span>
+
+                    <ul class="list-group list-group-flush shadow-sm rounded-3 text-start">
+                        <li class="list-group-item d-flex justify-content-between py-3">
+                            <span class="text-muted small fw-bold">Abonado ID</span>
+                            <span class="fw-bold text-dark" id="verAbonado">000</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between py-3">
+                            <span class="text-muted small fw-bold">Tipo / Servicio</span>
+                            <span class="fw-bold text-primary"><span id="verTipo"></span> - <span id="verClase"></span></span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between py-3">
+                            <span class="text-muted small fw-bold">Técnico Asignado</span>
+                            <span class="fw-bold text-dark" id="verTecnico">Tecnico</span>
+                        </li>
+                        <li class="list-group-item py-3">
+                            <span class="text-muted small fw-bold d-block mb-1">Observaciones</span>
+                            <span class="fw-medium text-dark" id="verObs"></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.appendChild(document.getElementById('modalBusqueda'));
+            document.body.appendChild(document.getElementById('ordenModal'));
+            document.body.appendChild(document.getElementById('modalVerOrden'));
+        });
+
+        function saltarPagina(paginaIngresada, totalPaginas) {
+            let pag = parseInt(paginaIngresada);
+            let total = parseInt(totalPaginas);
+            if (isNaN(pag) || pag < 1) pag = 1;
+            if (pag > total) pag = total;
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('page', pag - 1);
+            window.location.search = urlParams.toString();
+        }
+
+        function abrirModalNuevo() {
+            document.getElementById('ordenForm').reset();
+            document.getElementById('idOS').value = '';
+            document.getElementById('modalTitle').innerHTML = '<i class="bi bi-tools text-success me-2"></i>Nueva Orden';
+            document.getElementById('btnGuardar').innerText = 'Guardar';
+            new bootstrap.Modal(document.getElementById('ordenModal')).show();
+        }
+
+        function abrirModalEdicion(btn) {
+            document.getElementById('idOS').value = btn.getAttribute('data-id');
+            document.getElementById('numeroOSInput').value = btn.getAttribute('data-num') !== 'null' ? btn.getAttribute('data-num') : '';
+            document.getElementById('idAbonadoInput').value = btn.getAttribute('data-abonado');
+            document.getElementById('tipoOSInput').value = btn.getAttribute('data-tipo');
+            document.getElementById('claseServicioInput').value = btn.getAttribute('data-clase');
+            document.getElementById('estadoInput').value = btn.getAttribute('data-estado');
+            document.getElementById('tecnicoInput').value = btn.getAttribute('data-tecnico') !== 'null' ? btn.getAttribute('data-tecnico') : '';
+            document.getElementById('obsInput').value = btn.getAttribute('data-obs') !== 'null' ? btn.getAttribute('data-obs') : '';
+
+            document.getElementById('modalTitle').innerHTML = '<i class="bi bi-pencil-square text-primary me-2"></i>Editar OS #' + btn.getAttribute('data-id');
+            document.getElementById('btnGuardar').innerText = 'Actualizar';
+            new bootstrap.Modal(document.getElementById('ordenModal')).show();
+        }
+
+        function abrirModalVer(btn) {
+            document.getElementById('verNumOS').innerText = 'OS-' + (btn.getAttribute('data-num') !== 'null' ? btn.getAttribute('data-num') : btn.getAttribute('data-id'));
+            document.getElementById('verAbonado').innerText = btn.getAttribute('data-abonado');
+            document.getElementById('verTipo').innerText = btn.getAttribute('data-tipo');
+            document.getElementById('verClase').innerText = btn.getAttribute('data-clase');
+            document.getElementById('verTecnico').innerText = btn.getAttribute('data-tecnico') !== 'null' ? btn.getAttribute('data-tecnico') : 'No asignado';
+            document.getElementById('verObs').innerText = btn.getAttribute('data-obs') !== 'null' && btn.getAttribute('data-obs') !== '' ? btn.getAttribute('data-obs') : 'Sin observaciones.';
+
+            let estado = btn.getAttribute('data-estado');
+            let badge = document.getElementById('verEstado');
+            badge.innerText = estado === 'EJE' ? 'EJECUTADO' : (estado === 'PEN' ? 'PENDIENTE' : estado);
+            badge.className = 'badge rounded-pill px-3 py-2 mb-4 mt-2 ' + (estado === 'EJE' ? 'bg-success' : (estado === 'PEN' ? 'bg-warning text-dark' : 'bg-secondary'));
+
+            new bootstrap.Modal(document.getElementById('modalVerOrden')).show();
+        }
+
+        (() => {
+            'use strict'
+            const forms = document.querySelectorAll('.needs-validation')
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })();
+    </script>
+</div>
+</body>
+</html>
